@@ -63,9 +63,9 @@ end
 
 
 function c_mn_no_mu(structure,int_rxn_index,m,n)
-    #"""
-    #Creates the c_mn for each individual beta reaction (without the \mu factors)
-    #"""
+    """
+    Creates the c_mn for each individual beta reaction (without the μ factors)
+    """
     
     if any(n.-structure.stochiometry_react[:,int_rxn_index] .> 0.)
         c_mnBeta = 0.
@@ -82,9 +82,9 @@ function c_mn_no_mu(structure,int_rxn_index,m,n)
 end
 
 function c_mn(structure,variables,int_rxn_index,m,n,time)
-    #"""
-    #Creates the c_mn for each individual beta reaction (including the \mu factors)
-    #"""
+    """
+    Creates the c_mn for each individual beta reaction (including the μ factors)
+    """
 
     if any(n.-structure.stochiometry_react[:,int_rxn_index] .> 0.)
         
@@ -139,9 +139,9 @@ function c_mnFULL_test(structure,variables,m,n)
 end
 
 function create_c_mn_dict(structure,variables,m_list,n_list)
-    #"""
-    #Creates a dictionary for the c_mn for each individual beta reaction (without the \mu factors) where the output is a dictionary and can be looked up by [int(rxn_index),tuple(m),tuple(n)]
-    #"""
+    """
+    Creates a dictionary for the c_mn for each individual beta reaction (without the μ factors) where the output is a dictionary and can be looked up by [int(rxn_index),tuple(m),tuple(n)]
+    """
 
     c_mn_dict = Dict()
 

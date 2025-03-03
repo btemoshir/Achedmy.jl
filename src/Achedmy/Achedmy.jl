@@ -1,4 +1,5 @@
 module Achedmy
+
 """
 Achedmy -- Adaptive CHEmical Dynamics using MemorY
 
@@ -11,6 +12,7 @@ email : btemoshir@gmail.com
 
 TODO: Implement Correlation function calculation!
 TODO: Add support for passing rates and initial values defined outside of Catalyst
+
 """
 
 #using Pkg
@@ -21,7 +23,7 @@ TODO: Add support for passing rates and initial values defined outside of Cataly
 #include("/home/harsh/Work/code/KadanoffBaym.jl")
 #import KandaoffBaym
 
-using Revise #Remove
+#using Revise #Remove
 
 using KadanoffBaym
 using Catalyst

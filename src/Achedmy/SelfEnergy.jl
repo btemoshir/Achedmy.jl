@@ -1,9 +1,103 @@
 include("BlockOp.jl")
 include("Cmn.jl")
 
+function self_energy_mak_noC!(structure, variables, times, h1, h2 , t, t′)
+    """
+    Mass action kinetics (MAK) or the Mean field or O(α) corrections to the self-energy
+    """
+
+    # Resize self-energies when Green functions are resized
+    if variables.response_type == "single"
+        if (n = size(variables.R, 2)) > size(variables.Σ_R, 2)
+            resize!(variables.Σ_R, n)
+            resize!(variables.Σ_μ, n)
+            resize!(variables.Σ_B, n)
+            #resize!(variables.C, n)
+        end
+    elseif variables.response_type == "cross"
+        if (n = size(variables.R, 3)) > size(variables.Σ_R, 3)
+            resize!(variables.Σ_R, n)
+            resize!(variables.Σ_μ, n)
+            resize!(variables.Σ_B, n)
+        end
+        
+        #Resize C as we resize R, but C is one size larger than R!
+        #if (m = size(variables.R, 3)+2) > (size(variables.C, 3))
+        #    resize!(variables.C, m+1)
+        #end
+    end
+
+    if t′ == 1
+
+        if variables.response_type == "single"
+
+            variables.Σ_μ[:,t,1:t] .= 0.
+            variables.Σ_R[:,t,1:t] .= 0.
+            variables.Σ_B[:,t,1:t] .= 0.
+            
+            temp0  = zeros(Int,structure.num_species)
+    
+            for i in 1:structure.num_species
+                temp1    = zeros(Int,structure.num_species)
+                temp1[i] = 1
+    
+                if t == 1
+                    #No deivision by step size at initial time because its zero
+                    variables.Σ_R[i,t,t] = c_mnFULL(structure,variables,temp1,temp1,t)
+                    variables.Σ_μ[i,t,t] = c_mnFULL(structure,variables,temp1,temp0,t)
+                    variables.Σ_B[i,t,t] = 2*c_mnFULL(structure,variables,2*temp1,temp0,t)
+                else            
+                    variables.Σ_R[i,t,t] = c_mnFULL(structure,variables,temp1,temp1,t)./h1[t]
+                    variables.Σ_μ[i,t,t] = c_mnFULL(structure,variables,temp1,temp0,t)./h1[t]
+                    variables.Σ_B[i,t,t] = 2*c_mnFULL(structure,variables,2*temp1,temp0,t)./h1[t]
+                end
+                
+                #REMEMBER TO SYMMETRIZE THE B? IS it needed or done explicitly by the symmetry of the response?
+    
+            end
+        end
+
+        if variables.response_type == "cross"
+                        
+            variables.Σ_μ[:,t,1:t]   .= 0.
+            variables.Σ_R[:,:,t,1:t] .= 0.
+            variables.Σ_B[:,:,t,1:t] .= 0.
+            
+            temp0  = zeros(Int,structure.num_species)
+    
+            for i in 1:structure.num_species
+                temp1    = zeros(Int,structure.num_species)
+                temp1[i] = 1
+
+                #No deivision by step size at initial time because its zero
+                if t == 1
+                    variables.Σ_μ[i,t,t] = c_mnFULL(structure,variables,temp1,temp0,t)
+                else
+                    variables.Σ_μ[i,t,t] = c_mnFULL(structure,variables,temp1,temp0,t)./h1[t]
+
+                end
+
+                for i_2 in 1:structure.num_species
+                    
+                    temp2    = zeros(Int,structure.num_species)
+                    temp2[i_2] = 1
+    
+                    if t == 1
+                        variables.Σ_R[i,i_2,t,t] = c_mnFULL(structure,variables,temp1,temp2,t)
+                        variables.Σ_B[i,i_2,t,t] = prod(factorial.(temp1.+temp2)).* c_mnFULL(structure,variables,temp1+temp2,temp0,t+1)
+                    else
+                        variables.Σ_R[i,i_2,t,t] = c_mnFULL(structure,variables,temp1,temp2,t)./h1[t]
+                        variables.Σ_B[i,i_2,t,t] = prod(factorial.(temp1.+temp2)).* c_mnFULL(structure,variables,temp1+temp2,temp0,t+1)./h1[t]
+                    end                
+                end
+            end
+        end
+    end
+end
+
 function self_energy_mak!(structure, variables, times, h1, h2 , t, t′)
     """
-    Mass action kinetics (MAK) or the Mean field or O(\alpha) corrections to the self-energy
+    Mass action kinetics (MAK) or the Mean field or O(α) corrections to the self-energy
     """
 
     # Resize self-energies when Green functions are resized
@@ -84,6 +178,7 @@ function self_energy_mak!(structure, variables, times, h1, h2 , t, t′)
     
                     if t == 1
                         variables.Σ_R[i,i_2,t,t] = c_mnFULL(structure,variables,temp1,temp2,t)
+                        #TODO: Review this whether to divide by h1[t] or not, but its zero at the initial time!
                         variables.Σ_B[i,i_2,t,t] = prod(factorial.(temp1.+temp2)).* c_mnFULL(structure,variables,temp1+temp2,temp0,t+1)
                     else
                         variables.Σ_R[i,i_2,t,t] = c_mnFULL(structure,variables,temp1,temp2,t)./h1[t]
@@ -91,38 +186,13 @@ function self_energy_mak!(structure, variables, times, h1, h2 , t, t′)
                     end                
                 end
             end
-
-            #print(variables.Σ_B)
-            
-            for j in 1:structure.num_species
-                for j2 in 1:structure.num_species
-
-                    variables.C[j,j2,1:t+1,1:t+1] .= 0.
-                    
-                    for j_sum1 in 1:structure.num_species
-                        for j_sum2 in 1:structure.num_species
-
-                            if t == 1
-                                variables.C[j,j2,2:t+1,2:t+1] += collect(variables.R[j,j_sum1,tt,ttt] for tt in 1:t, ttt in 1:t)*(variables.Σ_B[j_sum1,j_sum2,1:t,1:t]* transpose(collect(variables.R[j2,j_sum2,tt,ttt] for tt in 1:t, ttt in 1:t)))
-
-                            else
-                                variables.C[j,j2,2:t+1,2:t+1] += collect(variables.R[j,j_sum1,tt,ttt].*h1[ttt] for tt in 1:t, ttt in 1:t)*(variables.Σ_B[j_sum1,j_sum2,1:t,1:t]* transpose(collect(variables.R[j2,j_sum2,tt,ttt].*h1[ttt] for tt in 1:t, ttt in 1:t)))
-
-                            end
-                        end
-                    end
-                end
-            end
-            #print(variables.C)
-            #print(variables.R)
-            #print(h1[t])
         end
     end
 end
 
 function self_energy_alpha2!(structure, variables, times, h1, h2 , t, t′)
     """
-    O(\alpha^2) corrections to the self-energy
+    O(α^2) corrections to the self-energy
     """
 
     # Resize self-energies when Green functions are resized    
@@ -388,10 +458,10 @@ end
 
 function self_energy_SBR_mixed!(structure, variables, times, h1, h2 , t, t′)    
     """
-    SBR corrections to the self-energy with different n being mixed (Slow -- uses block inversion instead of LAPAC inversion!)  
+    generalized SBR (gSBR) corrections to the self-energy with different n being mixed (Slow -- uses block inversion instead of LAPAC inversion!)  
 
-    TODO: ADD hat(R2) properly, it is currently lacking!
-        
+    TODO: ADD hat(R2) or hat(B2) properly, it is currently lacking! -- TODO
+
     """
 
     # Resize self-energies when Green functions are resized    
@@ -490,7 +560,7 @@ end
 
 function self_energy_SBR_mixed_cross_noC!(structure, variables, times, h1, h2 , t, t′)    
     """
-    SBR corrections to the self-energy with different n being mixed (Slow -- uses block inversion instead of LAPAC inversion!)    
+    generalized SBR (gSBR) corrections to the self-energy with different n being mixed (Slow -- uses block inversion instead of LAPAC inversion!)    
     """
 
     # Resize self-energies when Green functions are resized    
@@ -498,7 +568,7 @@ function self_energy_SBR_mixed_cross_noC!(structure, variables, times, h1, h2 , 
         resize!(variables.Σ_R, n)
         resize!(variables.Σ_μ, n)
         resize!(variables.Σ_B, n)
-    end        
+    end
 
     if t′ == 1 
     # Only do the self-energy calcultion for the first value of t'
@@ -528,21 +598,22 @@ function self_energy_SBR_mixed_cross_noC!(structure, variables, times, h1, h2 , 
                 
                 Σ_R_temp[i,i_2,t] += c_mnFULL(structure,variables,temp1,temp2,t+1)./h1[t]
                 
-                Σ_B_temp[i,i_2,t] += prod(factorial.(temp1.+temp2)).*c_mnFULL(structure,variables,temp1.+temp2,temp0,t+1)./h1[t]
-            
+                Σ_B_temp[i,i_2,t] += prod(factorial.(temp1.+temp2))*c_mnFULL(structure,variables,temp1.+temp2,temp0,t+1)/h1[t]
             end
         end
 
         n_listNEW_R = []
         
-        for n in structure.n_list_union
-            # Do we implement the sum condition here or not??? Think!
-            if n ∉ push!(collect.(Int.(I[1:structure.num_species,k]) for k in 1:structure.num_species),temp0) &&  sum(n) < 3
+        for n in structure.m_list_union #TODO: This has been changed!
+        #for n in structure.n_list_union
+            if n ∉ push!(collect.(Int.(I[1:structure.num_species,k]) for k in 1:structure.num_species),temp0) && sum(n) < 3
                 push!(n_listNEW_R,n)
             end
         end
 
-        if length(n_listNEW_R) > 0
+        if length(n_listNEW_R) > 0 
+            #TODO: In the Plefka Python code, there is an additional condition which checks if sum(n1) = sum(n2), so the number of legs are the same on both sides!
+            #Add it to the response_combinations function itself?
 
             cMN = collect(c_mnFULL(structure,variables,n′,n′′,tt) for n′ in n_listNEW_R, n′′ in n_listNEW_R,  tt in 1:t)
 
@@ -550,7 +621,9 @@ function self_energy_SBR_mixed_cross_noC!(structure, variables, times, h1, h2 , 
             
             χ   = collect(cMN[n′,n′′,ttt].*Γ[n′,n′′,tt,ttt].*h1[ttt] for n′ in 1:length(n_listNEW_R), n′′ in 1:length(n_listNEW_R), tt in 1:t, ttt in 1:t)
 
-            # ------- OLD --------
+            #Ensure that the dt*EV of the matrix is < 1 ?
+            
+            # ------- OLD ---------------
 
             #cMN = collect(c_mnFULL(structure,variables,n′,n′′,tt) for n′ in n_listNEW_R, n′′ in n_listNEW_R,  tt in 1:t)
             
@@ -561,19 +634,28 @@ function self_energy_SBR_mixed_cross_noC!(structure, variables, times, h1, h2 , 
             #------- OLD END ------------
 
             Ξ   = block_tri_lower_inverse(block_identity(length(n_listNEW_R),t).-block_lower_shift(χ))
+            #Ξ   = block_tri_lower_inverse_old(block_identity(length(n_listNEW_R),t).-block_lower_shift(χ))
 
             cN0 = collect(sum(c_mnFULL(structure,variables,n_listNEW_R[n′′],temp0,ttt).*Γ[n′,n′′,tt,ttt] for n′′ in 1:length(n_listNEW_R)) for n′ in 1:length(n_listNEW_R), tt in 1:t, ttt in 1:t)
 
-            Ξ_μ = sum(block_mat_mix_mul(Ξ,cN0),dims=3)[:,t]
-        
+            Ξ_μ = block_mat_mix_mul(Ξ,cN0)
+
+            Ξ_B = sum(block_mat_mix_mul(Ξ,cN0),dims=3)[:,t-1]
+            
+            #Ξ_μ = sum(block_mat_mix_mul(Ξ,cN0),dims=3)[:,t]
+            #Changed -- Older version (with error)
+
             for i in 1:structure.num_species
     
                 temp1       = zeros(Int,structure.num_species)
                 temp1[i]    = 1
     
                 c1N = collect(c_mnFULL(structure,variables,temp1,n′,t+1) for n′ in n_listNEW_R)
+                
+                Σ_μ_temp[i,1:t] .+= block_vec_mat_mul_single_sp(c1N,Ξ_μ)[t,1:t]
 
-                Σ_μ_temp[i,t] += sum(c1N[n].*Ξ_μ[n] for n in 1:length(n_listNEW_R))
+                #Σ_μ_temp[i,t] += sum(c1N[n].*Ξ_μ[n] for n in 1:length(n_listNEW_R))
+                #Changed -- Older version (with error)
 
                 for j in 1:structure.num_species
 
@@ -587,8 +669,14 @@ function self_energy_SBR_mixed_cross_noC!(structure, variables, times, h1, h2 , 
                     Σ_R_temp[i,j,1:t] .+= block_vec_mat_mul_single_sp(c1N,Ξ2)[t,1:t]
 
                     c2N = prod(factorial.(temp1.+temp2)).*collect(c_mnFULL(structure,variables,temp1.+temp2,n′,t+1) for n′ in n_listNEW_R)
-                    Σ_B_temp[i,j,t] += sum(c2N[n].*Ξ_μ[n] for n in 1:length(n_listNEW_R))
+                    
+                    #Σ_B_temp[i,j,t] += sum(c2N[n].*Ξ_μ[n] for n in 1:length(n_listNEW_R)) #This is being evaluated to zero! This is an issue!
+                    
+                    Σ_B_temp[i,j,t] += dot(c2N,Ξ_B)
 
+                    #Σ_B_temp[i,j,t] += sum(block_vec_mat_mul_single_sp(c2N,Ξ_μ)[t,1:t])
+                    #Σ_B_temp[i,j,t] += sum(block_vec_mat_mul_single_sp(c2N,Ξ_μ)[t-1,1:t-1])
+                    #Σ_B_temp[i,j,t] += sum(block_vec_mat_mul_single_sp(c2N,Ξ_μ)[1:t,t])
                 end
                         
             end
@@ -605,7 +693,12 @@ end
 
 function self_energy_SBR_mixed_cross!(structure, variables, times, h1, h2 , t, t′)    
     """
-    SBR corrections to the self-energy (using C) with different n being mixed (Slow -- uses block inversion instead of LAPAC inversion!)    
+    generalized SBR (gSBR) corrections to the self-energy (using C) with different n being mixed (Slow -- uses block inversion instead of LAPAC inversion!)    
+    
+    Uses self-consistent C in the calculation!
+
+    #UNSTABLE -- TODO
+
     """
 
     # Resize self-energies when Green functions are resized    

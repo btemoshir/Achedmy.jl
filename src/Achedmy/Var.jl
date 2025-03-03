@@ -15,6 +15,7 @@ Base.@kwdef struct ReactionVariables
     R = 0 
     μ = 0
     C = 0
+    N = 0
     Σ_R = 0
     Σ_μ = 0
     Σ_B = 0
@@ -31,9 +32,6 @@ function ReactionVariables(reaction_system::ReactionStructure,response_type="cro
     - reaction_system: class(ReactionStructure)
     - response_type : string
                     "single" or "cross"
-    
-    Add proper support for cross responses!
-    
     """
     
     
@@ -41,16 +39,22 @@ function ReactionVariables(reaction_system::ReactionStructure,response_type="cro
         
         R = GreenFunction(zeros(Float64,reaction_system.num_species,1,1), Response)
         R[:,1,1] = ones(reaction_system.num_species)
-        #R[:,:,1,1] = ones(reaction_system.num_species)
+        
         μ = GreenFunction(zeros(Float64,reaction_system.num_species,1), OnePoint)
         μ[:,1] = reaction_system.initial_values
+        
         C = GreenFunction(zeros(Float64,reaction_system.num_species,1,1), Symmetrical)
+        C[:,1,1] = reaction_system.initial_C #Defines the initial correlations in the system if any
+        
+        N = GreenFunction(zeros(Float64,reaction_system.num_species,1,1), Response)
+        N[:,1,1] = μ[:,1] + C[:1,1]
         
         return ReactionVariables(
             response_type = response_type,
             R = R,
             μ = μ,
             C = C,
+            N = N,
             Σ_R = GreenFunction(zeros(Float64,reaction_system.num_species,1,1), Response),
             Σ_B = GreenFunction(zeros(Float64,reaction_system.num_species,1,1), Symmetrical),
             Σ_μ = GreenFunction(zeros(Float64,reaction_system.num_species,1,1), Response))
@@ -66,13 +70,29 @@ function ReactionVariables(reaction_system::ReactionStructure,response_type="cro
         
         μ = GreenFunction(zeros(Float64,reaction_system.num_species,1), OnePoint)
         μ[:,1] = reaction_system.initial_values
+        
         C = GreenFunction(zeros(Float64,reaction_system.num_species,reaction_system.num_species,1,1), Symmetrical)
+        
+        #TODO: Do this properly, such that an error is raised!
+        if size(reaction_system.initial_C) == size(C[:,:,1,1])
+            C[:,:,1,1] = reaction_system.initial_C #Defines the initial correlations in the system if any
+        else
+            #C[:,:,1,1] .= 0.
+            C[:,:,1,1] = zeros(reaction_system.num_species,reaction_system.num_species)
+        end
+
+        N = GreenFunction(zeros(Float64,reaction_system.num_species,reaction_system.num_species,1,1), Response)
+        N[:,:,1,1] = C[:,:,1,1]
+        for i in range(1,reaction_system.num_species)
+            N[i,i,1,1] += μ[i,1]
+        end
         
         return ReactionVariables(
             response_type = response_type,
             R = R,
             μ = μ,
             C = C,
+            N = N,
             Σ_R = GreenFunction(zeros(Float64,reaction_system.num_species,reaction_system.num_species,1,1), Response),
             Σ_B = GreenFunction(zeros(Float64,reaction_system.num_species,reaction_system.num_species,1,1), Symmetrical),
             Σ_μ = GreenFunction(zeros(Float64,reaction_system.num_species,1,1), Response))
