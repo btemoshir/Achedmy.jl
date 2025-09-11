@@ -132,11 +132,11 @@ function solve_dynamics!(structure,variables; selfEnergy="gSBR", tmax=1., tstart
                         R1 = collect(variables.R[j,j_sum1,tt,ttt] for tt in 1:t, ttt in 1:t)                            
                         ΣB = collect(variables.Σ_B[j_sum1,j_sum2,tt,ttt] for tt in 1:t, ttt in 1:t)
                         for tt in 1:t
-                            #ΣB[tt,1:tt] .*= sol.w[tt][1:tt].^2
-                            ΣB[tt,1:tt] .*= sol.w[tt][1:tt].*sol.w[t][1:tt]
+                            # ΣB[tt,1:tt] .*= sol.w[tt][1:tt].^2
+                            ΣB[tt,1:tt] .*= sol.w[tt][1:tt].*sol.w[t][1:tt] #TODO: To check!
                         end
                         R2 = collect(variables.R[j2,j_sum2,ttt,tt] for tt in 1:t, ttt in 1:t)                            
-                        variables.C[j,j2,1:t,1:t] += R1*(ΣB*R2)                            
+                        variables.C[j,j2,1:t,1:t] += R1 * (ΣB * R2)
 
                     end
                 end
@@ -152,6 +152,7 @@ function solve_dynamics!(structure,variables; selfEnergy="gSBR", tmax=1., tstart
             for i in 1:structure.num_species
                 for j in 1:structure.num_species
                     variables.N[i,j,tt,1:t] = variables.C[i,j,tt,1:t] .+ variables.μ[j,1:t] .* variables.R[i,j,tt,1:t]
+                    #TODO: Should this be the connected correlator? Is this defined here like this?
                 end
             end
         end
@@ -355,16 +356,16 @@ function fv_cross!(structure, variables, out, times, h1, h2, t, t′)
 
     for j in 1:structure.num_species
         for j2 in 1:structure.num_species
-            retval[j,j2] = -structure.rate_destruction[j].*variables.R[j,j2,t,t′] #TODO: Is this the issue for the cross responses? Do we still subtract this term or not?
+            retval[j,j2] = -structure.rate_destruction[j].*variables.R[j,j2,t,t′]
         end
     end
 
-    #Checks the value of R_ii. If its negative or greater than 1, it outputs the vertical evolution to be zero!
-    for i in 1:structure.num_species
-        if variables.R[i,i,t,t′] < 0 || variables.R[i,i,t,t′] > 1
-            corr[i,i] = 0
-        end
-    end
+    # #Checks the value of R_ii. If its negative or greater than 1, it outputs the vertical evolution to be zero!
+    # for i in 1:structure.num_species
+    #     if variables.R[i,i,t,t′] < 0 || variables.R[i,i,t,t′] > 1
+    #         corr[i,i] = 0
+    #     end
+    # end
 
     out[1]  = retval .+ corr
 

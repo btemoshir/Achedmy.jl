@@ -2,7 +2,12 @@
 	"folders": [
 		{
 			"path": "."
+		},
+		{
+			"path": "../../papers/plefka_PRX"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"julia.environmentPath": "/Users/localadmin-moshir.harsh01/Work/code/achedmy"
+	}
 }

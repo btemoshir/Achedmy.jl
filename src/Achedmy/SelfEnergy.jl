@@ -598,7 +598,7 @@ function self_energy_SBR_mixed_cross_noC!(structure, variables, times, h1, h2 , 
                 
                 Σ_R_temp[i,i_2,t] += c_mnFULL(structure,variables,temp1,temp2,t+1)./h1[t]
                 
-                Σ_B_temp[i,i_2,t] += prod(factorial.(temp1.+temp2))*c_mnFULL(structure,variables,temp1.+temp2,temp0,t+1)/h1[t]
+                Σ_B_temp[i,i_2,t] += prod(factorial.(temp1.+temp2))*c_mnFULL(structure,variables,temp1.+temp2,temp0,t+1)./h1[t]
             end
         end
 
@@ -612,16 +612,17 @@ function self_energy_SBR_mixed_cross_noC!(structure, variables, times, h1, h2 , 
         end
 
         if length(n_listNEW_R) > 0 
-            #TODO: In the Plefka Python code, there is an additional condition which checks if sum(n1) = sum(n2), so the number of legs are the same on both sides!
-            #Add it to the response_combinations function itself?
 
-            cMN = collect(c_mnFULL(structure,variables,n′,n′′,tt) for n′ in n_listNEW_R, n′′ in n_listNEW_R,  tt in 1:t)
+            # cMN = collect(c_mnFULL(structure,variables,n′,n′′,tt) for n′ in n_listNEW_R, n′′ in n_listNEW_R,  tt in 1:t)
+            # Needs to be diagonal in the tt domain!
 
-            Γ   = collect(==(sum(n′),sum(n′′))*response_combinations(n′,n′′,variables.R[:,:,tt,ttt]) for n′ in n_listNEW_R, n′′ in n_listNEW_R, tt in 1:t, ttt in 1:t)
+            cMN = collect(==(tt,ttt)*c_mnFULL(structure,variables,n′,n′′,tt) for n′ in n_listNEW_R, n′′ in n_listNEW_R,  tt in 1:t, ttt in 1:t)
+
+            Γ   = collect(==(sum(n′),sum(n′′)).*response_combinations(n′,n′′,variables.R[:,:,tt,ttt]) for n′ in n_listNEW_R, n′′ in n_listNEW_R, tt in 1:t, ttt in 1:t)
             
-            χ   = collect(cMN[n′,n′′,ttt].*Γ[n′,n′′,tt,ttt].*h1[ttt] for n′ in 1:length(n_listNEW_R), n′′ in 1:length(n_listNEW_R), tt in 1:t, ttt in 1:t)
+            # χ   = collect(cMN[n′,n′′,ttt].*Γ[n′,n′′,tt,ttt].*h1[ttt] for n′ in 1:length(n_listNEW_R), n′′ in 1:length(n_listNEW_R), tt in 1:t, ttt in 1:t)
 
-            #Ensure that the dt*EV of the matrix is < 1 ?
+            χ = block_mat_mul(Γ, cMN .* reshape(h1, 1, 1, 1, t))
             
             # ------- OLD ---------------
 
@@ -633,15 +634,18 @@ function self_energy_SBR_mixed_cross_noC!(structure, variables, times, h1, h2 , 
             
             #------- OLD END ------------
 
-            Ξ   = block_tri_lower_inverse(block_identity(length(n_listNEW_R),t).-block_lower_shift(χ))
+            Ξ  = block_tri_lower_inverse(block_identity(length(n_listNEW_R),t) .- block_lower_shift(χ))
             #Ξ   = block_tri_lower_inverse_old(block_identity(length(n_listNEW_R),t).-block_lower_shift(χ))
 
-            cN0 = collect(sum(c_mnFULL(structure,variables,n_listNEW_R[n′′],temp0,ttt).*Γ[n′,n′′,tt,ttt] for n′′ in 1:length(n_listNEW_R)) for n′ in 1:length(n_listNEW_R), tt in 1:t, ttt in 1:t)
+            # cN0 = collect(sum(c_mnFULL(structure,variables,n_listNEW_R[n′′],temp0,ttt).*Γ[n′,n′′,tt,ttt] for n′′ in 1:length(n_listNEW_R)) for n′ in 1:length(n_listNEW_R), tt in 1:t, ttt in 1:t)
+            cN0 = collect(==(tt,ttt)*c_mnFULL(structure,variables,n′,temp0,ttt) for n′ in n_listNEW_R, tt in 1:t, ttt in 1:t)  
+            cN0 = block_mat_mix_mul(Γ,cN0)
 
             Ξ_μ = block_mat_mix_mul(Ξ,cN0)
+            # Ξ_B = sum(block_mat_mix_mul(Ξ,cN0),dims=3)[:,t-1]
+            Ξ_B = sum(block_mat_mix_mul(Ξ,cN0),dims=3)[:,t]
 
-            Ξ_B = sum(block_mat_mix_mul(Ξ,cN0),dims=3)[:,t-1]
-            
+
             #Ξ_μ = sum(block_mat_mix_mul(Ξ,cN0),dims=3)[:,t]
             #Changed -- Older version (with error)
 
@@ -662,13 +666,20 @@ function self_energy_SBR_mixed_cross_noC!(structure, variables, times, h1, h2 , 
                     temp2       = zeros(Int,structure.num_species)
                     temp2[j]    = 1
                 
-                    cN1 = collect(sum(c_mnFULL(structure,variables,n_listNEW_R[n′′],temp2,ttt).*Γ[n′,n′′,tt,ttt] for n′′ in 1:length(n_listNEW_R)) for n′ in 1:length(n_listNEW_R),  tt in 1:t, ttt in 1:t)
-                    
+                    # cN1 = collect(sum(c_mnFULL(structure,variables,n_listNEW_R[n′′],temp2,ttt).*Γ[n′,n′′,tt,ttt] for n′′ in 1:length(n_listNEW_R)) for n′ in 1:length(n_listNEW_R),  tt in 1:t, ttt in 1:t)
+                                        
+                    cN1 = collect(==(tt,ttt)*c_mnFULL(structure,variables,n′,temp2,ttt) for n′ in n_listNEW_R,  tt in 1:t, ttt in 1:t)
+                    cN1 = block_mat_mix_mul(Γ,cN1)
+
                     Ξ2  = block_mat_mix_mul(Ξ,cN1)
-        
+                    
+                    # for ind in 1:length(n_listNEW_R)
+                    #     Σ_R_temp[i,j,1:t] .+= (c1N[ind] .* Ξ2[ind,t,1:t])
+                    # end
+
                     Σ_R_temp[i,j,1:t] .+= block_vec_mat_mul_single_sp(c1N,Ξ2)[t,1:t]
 
-                    c2N = prod(factorial.(temp1.+temp2)).*collect(c_mnFULL(structure,variables,temp1.+temp2,n′,t+1) for n′ in n_listNEW_R)
+                    c2N = prod(factorial.(temp1.+temp2)).*collect(c_mnFULL(structure, variables, temp1 .+ temp2, n′, t+1) for n′ in n_listNEW_R)
                     
                     #Σ_B_temp[i,j,t] += sum(c2N[n].*Ξ_μ[n] for n in 1:length(n_listNEW_R)) #This is being evaluated to zero! This is an issue!
                     
