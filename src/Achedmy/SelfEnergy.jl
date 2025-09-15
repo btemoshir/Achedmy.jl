@@ -642,8 +642,7 @@ function self_energy_SBR_mixed_cross_noC!(structure, variables, times, h1, h2 , 
             cN0 = block_mat_mix_mul(Γ,cN0)
 
             Ξ_μ = block_mat_mix_mul(Ξ,cN0)
-            # Ξ_B = sum(block_mat_mix_mul(Ξ,cN0),dims=3)[:,t-1]
-            Ξ_B = sum(block_mat_mix_mul(Ξ,cN0),dims=3)[:,t]
+            Ξ_B = sum(block_mat_mix_mul(Ξ,cN0) .*reshape(h1, 1, 1, t) ,dims=3)[:,t]
 
 
             #Ξ_μ = sum(block_mat_mix_mul(Ξ,cN0),dims=3)[:,t]
@@ -680,10 +679,10 @@ function self_energy_SBR_mixed_cross_noC!(structure, variables, times, h1, h2 , 
                     Σ_R_temp[i,j,1:t] .+= block_vec_mat_mul_single_sp(c1N,Ξ2)[t,1:t]
 
                     c2N = prod(factorial.(temp1.+temp2)).*collect(c_mnFULL(structure, variables, temp1 .+ temp2, n′, t+1) for n′ in n_listNEW_R)
-                    
+
                     #Σ_B_temp[i,j,t] += sum(c2N[n].*Ξ_μ[n] for n in 1:length(n_listNEW_R)) #This is being evaluated to zero! This is an issue!
                     
-                    Σ_B_temp[i,j,t] += dot(c2N,Ξ_B)
+                    Σ_B_temp[i,j,t] += dot(c2N,Ξ_B)./h1[t]
 
                     #Σ_B_temp[i,j,t] += sum(block_vec_mat_mul_single_sp(c2N,Ξ_μ)[t,1:t])
                     #Σ_B_temp[i,j,t] += sum(block_vec_mat_mul_single_sp(c2N,Ξ_μ)[t-1,1:t-1])

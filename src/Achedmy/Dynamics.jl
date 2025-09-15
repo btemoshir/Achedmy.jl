@@ -121,6 +121,32 @@ function solve_dynamics!(structure,variables; selfEnergy="gSBR", tmax=1., tstart
             resize!(variables.C, n)
         end
 
+        # #Update the correlation functions!
+        # t = length(sol.w)
+        # for j in 1:structure.num_species
+        #     for j2 in 1:structure.num_species
+        #         variables.C[j,j2,:,:] .= 0.
+        #         for j_sum1 in 1:structure.num_species
+        #             for j_sum2 in 1:structure.num_species
+
+        #                 R1 = collect(variables.R[j,j_sum1,tt,ttt] for tt in 1:t, ttt in 1:t)                            
+        #                 # ΣB = collect(variables.Σ_B[j_sum1,j_sum2,tt,ttt] for tt in 1:t, ttt in 1:t)
+        #                 ΣB = collect(variables.Σ_B[j_sum1,j_sum2,tt,ttt].*(sol.w[t][ttt]) for tt in 1:t, ttt in 1:t)
+        #                 for tt in 1:t
+        #                     # ΣB[tt,1:tt] .*= sol.w[tt][1:tt].^2
+        #                     # ΣB[tt,1:tt] .*= sol.w[tt][1:tt] #.*sol.w[t][1:tt] #TODO: To check!
+        #                     ΣB[tt,1:tt] .*= reverse(sol.w[tt][1:tt]).*sol.w[tt][1:tt]
+        #                 end
+        #                 # R2 = collect(variables.R[j2,j_sum2,ttt,tt] for tt in 1:t, ttt in 1:t)
+        #                 R2 = collect(variables.R[j2,j_sum2,tt,ttt] for tt in 1:t, ttt in 1:t)
+        #                 # R2 = collect(variables.R[j2,j_sum2,ttt,tt] for ttt in 1:t, tt in 1:t)
+        #                 variables.C[j,j2,1:t,1:t] += R1 * (ΣB * transpose(R2))
+
+        #             end
+        #         end
+        #     end
+        # end
+
         #Update the correlation functions!
         t = length(sol.w)
         for j in 1:structure.num_species
@@ -129,14 +155,15 @@ function solve_dynamics!(structure,variables; selfEnergy="gSBR", tmax=1., tstart
                 for j_sum1 in 1:structure.num_species
                     for j_sum2 in 1:structure.num_species
 
-                        R1 = collect(variables.R[j,j_sum1,tt,ttt] for tt in 1:t, ttt in 1:t)                            
-                        ΣB = collect(variables.Σ_B[j_sum1,j_sum2,tt,ttt] for tt in 1:t, ttt in 1:t)
-                        for tt in 1:t
-                            # ΣB[tt,1:tt] .*= sol.w[tt][1:tt].^2
-                            ΣB[tt,1:tt] .*= sol.w[tt][1:tt].*sol.w[t][1:tt] #TODO: To check!
-                        end
-                        R2 = collect(variables.R[j2,j_sum2,ttt,tt] for tt in 1:t, ttt in 1:t)                            
-                        variables.C[j,j2,1:t,1:t] += R1 * (ΣB * R2)
+                        # R1 = collect(ttt <= tt ? variables.R[j,j_sum1,tt,ttt].*sol.w[tt][ttt] : 0 for tt in 1:t, ttt in 1:t)
+                        R1 = collect(ttt <= tt ? variables.R[j,j_sum1,tt,ttt] : 0 for tt in 1:t, ttt in 1:t)                            
+
+                        ΣB = collect(variables.Σ_B[j_sum1,j_sum2,tt,ttt].*sol.w[tt][tt] for tt in 1:t, ttt in 1:t)
+
+                        R2 = collect(ttt <= tt ? variables.R[j2,j_sum2,tt,ttt].*sol.w[tt][ttt] : 0 for tt in 1:t, ttt in 1:t)
+                        # R2 = collect(ttt <= tt ? variables.R[j2,j_sum2,tt,ttt].*sol.w[t][ttt] : 0 for tt in 1:t, ttt in 1:t)
+
+                        variables.C[j,j2,1:t,1:t] += R1 * (ΣB * transpose(R2))
 
                     end
                 end
