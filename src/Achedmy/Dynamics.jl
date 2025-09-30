@@ -76,7 +76,8 @@ function solve_dynamics!(structure,variables; selfEnergy="gSBR", tmax=1., tstart
         if (n = size(variables.R, 2)) > size(variables.C, 2)
             resize!(variables.C, n)
         end
-                
+        
+        #TODO: Update the C here properly following the cross response function calculation!
         #Update the correlation functions!
         t = length(sol.w)
         for j in 1:structure.num_species
@@ -116,9 +117,22 @@ function solve_dynamics!(structure,variables; selfEnergy="gSBR", tmax=1., tstart
         f1! = (x...) -> f1!(structure, variables, x...),
         kmax = k_max, dtini = dtini, dtmax = dtmax, qmax = qmax, qmin = qmin, γ = γ,kmax_vie=kmax_vie)
 
-        #Calculate C here separately for the calculation at the last time step!
-        if (n = size(variables.R, 3)) > size(variables.C, 3)
-            resize!(variables.C, n)
+        if isdefined(variables, :C)
+            #Check the type of variables.C and handle accordingly
+            if isa(variables.C, GreenFunction)
+                #Calculate C here separately for the calculation at the last time step!
+                if (n = size(variables.R, 3)) > size(variables.C, 3)
+                    resize!(variables.C, n)
+                end
+            else
+                #TODO: Retain the original values of C if the initial correlation is defined!
+                #TODO: But then the integral will have to be calculated properly given the initial correlations!
+                n = size(variables.R, 3)
+                variables.C = zeros(Float64,structure.num_species,structure.num_species,n,n)
+            end
+        else
+            n = size(variables.R, 3)
+            variables.C = zeros(Float64,structure.num_species,structure.num_species,n,n)
         end
 
         # #Update the correlation functions!

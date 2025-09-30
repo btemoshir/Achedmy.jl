@@ -8,8 +8,28 @@ struct Response <: KadanoffBaym.AbstractSymmetry end
 
 @inline KadanoffBaym.symmetry(::Type{Response}) = zero
 
+"""
+    Correlation
 
-Base.@kwdef struct ReactionVariables
+Correlation function with no imposed symmetry since cross species correlations need not be symmetric!
+"""
+struct Correlation <: KadanoffBaym.AbstractSymmetry end
+
+@inline KadanoffBaym.symmetry(::Type{Correlation}) = nothing
+
+
+"""
+    BlockSymmetrical
+Defined as invariant under interchanging first two indices with last two indices:
+``G(i,j,t,t') = G(j,i,t',t)``
+The cross correlation functions are of this type!
+"""
+struct BlockSymmetrical <: KadanoffBaym.AbstractSymmetry end
+
+# @inline KadanoffBaym.symmetry(::Type{BlockSymmetrical}) = x -> permutedims(x, (3, 4, 1, 2))
+@inline KadanoffBaym.symmetry(::Type{BlockSymmetrical}) = permutedims((3, 4, 1, 2))
+
+Base.@kwdef mutable struct ReactionVariables
 
     response_type = "cross"
     R = 0 
@@ -71,13 +91,24 @@ function ReactionVariables(reaction_system::ReactionStructure,response_type="cro
         μ = GreenFunction(zeros(Float64,reaction_system.num_species,1), OnePoint)
         μ[:,1] = reaction_system.initial_values
         
-        C = GreenFunction(zeros(Float64,reaction_system.num_species,reaction_system.num_species,1,1), Symmetrical)
+        #The cross response functions should not be Symmetric only in time but also in species!
+        #TODO: Define a new symmetry type for this!
+
+        # C = GreenFunction(zeros(Float64,reaction_system.num_species,reaction_system.num_species,1,1), BlockSymmetrical)
+        C = zeros(Float64,reaction_system.num_species,reaction_system.num_species,1,1)
         
         #TODO: Do this properly, such that an error is raised!
         if size(reaction_system.initial_C) == size(C[:,:,1,1])
             C[:,:,1,1] = reaction_system.initial_C #Defines the initial correlations in the system if any
+        elseif size(reaction_system.initial_C) == size(C[:,1,1,])
+            if any(reaction_system.initial_C .!= 0)
+                @warn "Initial correlations are non-zero and correlation matrix size mismatch. Using diagonal elements only."
+            end
+            for i in 1:reaction_system.num_species
+                C[i,i,1,1] = reaction_system.initial_C[i]
+            end
         else
-            #C[:,:,1,1] .= 0.
+            @warn "Initial correlation matrix size mismatch. Using all zero initial correlations."
             C[:,:,1,1] = zeros(reaction_system.num_species,reaction_system.num_species)
         end
 

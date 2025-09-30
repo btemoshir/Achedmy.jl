@@ -115,10 +115,11 @@ function self_energy_mak!(structure, variables, times, h1, h2 , t, t′)
             resize!(variables.Σ_B, n)
         end
         
-        #Resize C as we resize R, but C is one size larger than R!
-        if (m = size(variables.R, 3)+2) > (size(variables.C, 3))
-            resize!(variables.C, m+1)
-        end
+        # #Resize C as we resize R, but C is one size larger than R!
+        # if (m = size(variables.R, 3)+2) > (size(variables.C, 3))
+        #     resize!(variables.C, m+1)
+        # end
+        #TODO: Why was this needed?
     end
 
     if t′ == 1

@@ -53,7 +53,9 @@ def initialize_dynamics(self,initial_values,startTime,endTime,delta_t,ext_time_g
     return 0
 
 
-def runDynamics(self, max_num=10, method='Euler', variance=False, crossCorrelator=None, selfCorrelator_tau=None, crossCorrelator_tau=None, measureResponse = None, measureResponse_par = None ,initialization='poisson', initialization_par=None):
+def runDynamics(self, max_num=10, method='Euler', variance=False, crossCorrelator=None, selfCorrelator_tau=None, 
+    crossCorrelator_tau=None, measureResponse = None, measureResponse_par = None ,initialization='poisson', initialization_par=None,
+    return_probability=False):
 
     """
     Run the dynamics of the probability distribution dP/dt = MP where M is the master operator, and outputs the mean for each species. 
@@ -93,7 +95,8 @@ def runDynamics(self, max_num=10, method='Euler', variance=False, crossCorrelato
                 
     - initialization_par : any
                 Extra paramters to define the initial distribution
-    
+    - return_probability : True or False
+                Whether to return the full probability distribution or not
     """
 
     # We define some helper functions here which will help us later.
@@ -212,6 +215,9 @@ def runDynamics(self, max_num=10, method='Euler', variance=False, crossCorrelato
                 self.t += self.delta_t
 
                 pbar.update(1)
+
+        if return_probability is not False:
+            self.probability = sol.y
                 
         if measureResponse is not None:
             print('Method and measurement are incompatible')
