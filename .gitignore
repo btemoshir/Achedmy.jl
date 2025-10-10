@@ -1,7 +1,9 @@
 data/
 *.workspace
 *.ipynb_checkpoints/
+*checkpoint.ipynb
 *.DS_Store
 *.vscode/
 __pycache__/
 *.code-workspace
+*__pycache__*

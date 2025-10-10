@@ -41,9 +41,6 @@ function solve_dynamics!(structure,variables; selfEnergy="gSBR", tmax=1., tstart
     elseif variables.response_type == "cross"
         if selfEnergy == "gSBR"
             sE = (x...) -> self_energy_SBR_mixed_cross_noC!(structure, variables, x...)
-        elseif selfEnergy == "gSBRC"
-            throw(ErrorException("gSBRC self energy is not implemented yet!"))
-            sE = (x...) -> self_energy_SBR_mixed_cross!(structure, variables, x...)
         elseif selfEnergy == "SBR"
             throw(ErrorException("SBR self energy is only available when using single species response functions. For cross species response functions use gSBR self energy instead."))  
         #    sE = (x...) -> self_energy_SBR_cross!(structure, variables, x...)
