@@ -1,8 +1,8 @@
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.11.5"
+julia_version = "1.11.7"
 manifest_format = "2.0"
-project_hash = "7a0a5d059fda5d36d6b63ac6bb73065c9da46e7d"
+project_hash = "f4ced869af5075517e8db4394b03631bc18376bc"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "016833eb52ba2d6bea9fcb50ca295980e728ee24"
@@ -332,6 +332,12 @@ git-tree-sha1 = "249fe38abf76d48563e2f4556bebd215aa317e15"
 uuid = "a8cc5b0e-0ffa-5ad4-8c14-923d3ee1735f"
 version = "4.1.1"
 
+[[deps.Cumulants]]
+deps = ["Combinatorics", "CompilerSupportLibraries_jll", "Distributed", "Distributions", "SymmetricTensors"]
+git-tree-sha1 = "ecdae283cbdb5518bf3fdb61ff99eb973fab580b"
+uuid = "01e79fc4-f247-5fa3-af0e-2bd1d4cc767f"
+version = "1.0.6"
+
 [[deps.DataAPI]]
 git-tree-sha1 = "abe83f3a2f1b857aac70ef8b269080af17764bbe"
 uuid = "9a962f9c-6df0-11e9-0e5d-c546b8b5ee8a"
@@ -641,6 +647,12 @@ git-tree-sha1 = "af49a0851f8113fcfae2ef5027c6d49d0acec39b"
 uuid = "c145ed77-6b09-5dd9-b285-bf645a82121e"
 version = "0.5.4"
 
+[[deps.Ghostscript_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
+git-tree-sha1 = "43ba3d3c82c18d88471cfd2924931658838c9d8f"
+uuid = "61579ee1-b43e-5ca0-a5da-69d92c66a64b"
+version = "9.55.0+4"
+
 [[deps.Glob]]
 git-tree-sha1 = "97285bbd5230dd766e9ef6749b80fc617126d496"
 uuid = "c27321d9-0574-5035-807b-f59d2c89b15c"
@@ -830,20 +842,22 @@ uuid = "984bce1d-4616-540c-a9ee-88d1112d94c9"
 version = "0.4.6"
 
 [[deps.Latexify]]
-deps = ["Format", "InteractiveUtils", "LaTeXStrings", "MacroTools", "Markdown", "OrderedCollections", "Requires"]
-git-tree-sha1 = "ce5f5621cac23a86011836badfedf664a612cee4"
+deps = ["Format", "Ghostscript_jll", "InteractiveUtils", "LaTeXStrings", "MacroTools", "Markdown", "OrderedCollections", "Requires"]
+git-tree-sha1 = "44f93c47f9cd6c7e431f2f2091fcba8f01cd7e8f"
 uuid = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
-version = "0.16.5"
+version = "0.16.10"
 
     [deps.Latexify.extensions]
     DataFramesExt = "DataFrames"
     SparseArraysExt = "SparseArrays"
     SymEngineExt = "SymEngine"
+    TectonicExt = "tectonic_jll"
 
     [deps.Latexify.weakdeps]
     DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
     SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
     SymEngine = "123dc426-2d89-5057-bbad-38513e3affd8"
+    tectonic_jll = "d7dd28d6-a5e6-559c-9131-7eb760cdacc5"
 
 [[deps.LatticeRules]]
 deps = ["Random"]
@@ -1063,6 +1077,12 @@ version = "8.73.2"
     [deps.ModelingToolkit.weakdeps]
     BifurcationKit = "0f109fa4-8a5d-4b75-95aa-f515264e7665"
     DeepDiffs = "ab62b9b5-e342-54a8-a765-a90f495de1a6"
+
+[[deps.MomentClosure]]
+deps = ["Catalyst", "Combinatorics", "Cumulants", "DataStructures", "Distributions", "DocStringExtensions", "Latexify", "ModelingToolkit", "Random", "SciMLBase", "SymbolicUtils", "Symbolics", "TupleTools"]
+git-tree-sha1 = "16be2ea822c3837b56b19cbd7afa679f7d7a8d00"
+uuid = "01a1b25a-ecf0-48c5-ae58-55bfd5393600"
+version = "0.3.1"
 
 [[deps.MozillaCACerts_jll]]
 uuid = "14a3606d-f60d-562e-9121-12d972cd8159"
@@ -1746,6 +1766,12 @@ version = "5.11.0"
     [deps.Symbolics.weakdeps]
     SymPy = "24249f21-da20-56a4-8eb1-6a02cf4ae2e6"
 
+[[deps.SymmetricTensors]]
+deps = ["Combinatorics", "CompilerSupportLibraries_jll", "LinearAlgebra", "Random", "StatsBase"]
+git-tree-sha1 = "544ee2461e2b69c2e04bd4e1b596d9cf5c38142f"
+uuid = "1ab33d94-6c6c-50cc-93f0-e3f623a46aa0"
+version = "1.0.7"
+
 [[deps.TOML]]
 deps = ["Dates"]
 uuid = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
@@ -1811,6 +1837,11 @@ deps = ["InteractiveUtils", "MacroTools", "Preferences"]
 git-tree-sha1 = "ea3e54c2bdde39062abf5a9758a23735558705e1"
 uuid = "781d530d-4396-4725-bb49-402e4bee1e77"
 version = "1.4.0"
+
+[[deps.TupleTools]]
+git-tree-sha1 = "41e43b9dc950775eac654b9f845c839cd2f1821e"
+uuid = "9d95972d-f1c8-5527-a6e0-b4b365fa01f6"
+version = "1.6.0"
 
 [[deps.URIs]]
 git-tree-sha1 = "67db6cc7b3821e19ebe75791a9dd19c9b1188f2b"
