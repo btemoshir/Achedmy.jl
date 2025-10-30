@@ -16,8 +16,8 @@ function solve_dynamics!(structure,variables,atol,rtol,tmax,tstart=0.,selfEnergy
                 What kind of self-energy to use, "SBR-mix", "SBR", "MAK", "alpha2"
                 'SBR'     --  SBR corrections to the self-energy. Does not mix different n vectors
                 'SBR-mix' --  SBR corrections to the self-energy with different n being mixed (Slow)
-                'alpha2'  -- O(\alpha^2) corrections to the self-energy
-                'MAK'     -- Mass action kinetics (MAK) or the Mean field or O(\alpha) corrections to the self-energy
+                'alpha2'  -- O(α^2) corrections to the self-energy
+                'MAK'     -- Mass action kinetics (MAK) or the Mean field or O(α) corrections to the self-energy
     - usingC: True or False
                 Decides whether to use Correlation functions in the analysis and update them or not
     """
