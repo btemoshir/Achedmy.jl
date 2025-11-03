@@ -53,8 +53,10 @@ A Julia package implementing **memory-corrected dynamics** for chemical reaction
 7. [Examples](#examples)
 8. [Package Structure](#package-structure)
 9. [Dependencies](#dependencies)
-10. [Citation](#citation)
-11. [License](#license)
+10. [Advanced Usage](#advanced-usage)
+11. [Testing](#testing)
+12. [Citation](#citation)
+13. [License](#license)
 
 ---
 
@@ -116,6 +118,19 @@ Pkg.instantiate()
 ```julia
 using Pkg
 Pkg.develop(path="/path/to/achedmy")
+```
+
+###  Use Julia's package manager from terminal
+```bash
+julia --project=. -e 'using Pkg; Pkg.instantiate()'
+```
+
+### Verifying Installation
+
+```julia
+using Pkg
+Pkg.activate(".")
+Pkg.test("Achedmy")  # Run the test suite
 ```
 
 ---
@@ -276,13 +291,13 @@ The `examples/` directory contains detailed Jupyter notebooks for three systems:
 - Michaelis-Menten kinetics with 4 species
 - Full comparison of all methods (gSBR, MAK, MCA, LNA, Master, Gillespie)
 - Cross-correlations and cross-responses
-- Validates against exact stochastic simulations
+- Significant deviations from mean-field predictions
 
 ### 3. SIR Infection Dynamics (`SIR_infection_dynamics.ipynb`)
 - Epidemic spreading in finite populations
 - Time-dependent infection and recovery
 - Critical role of fluctuations near transitions
-- Population-size effects
+- Population-size effects drastically alter dynamics; mean field predicts infection spreads to entire population, while gSBR correctly predicts extinction in finite populations.
 
 ### Running Examples
 
@@ -294,7 +309,7 @@ jupyter notebook enzyme_kinetics.ipynb
 **Note:** Examples require additional Python libraries for comparison with other methods:
 - `cheMASTER` (Master equation solver)
 - `emre` (EMRE/LNA solver)
-- `tqdm` (progress bars - may need disabling, see [Troubleshooting](#troubleshooting))
+<!-- - `tqdm` (progress bars - may need disabling, see [Troubleshooting](#troubleshooting)) -->
 
 ---
 
@@ -307,8 +322,10 @@ achedmy/
 │       ├── Achedmy.jl          # Main module
 │       ├── Cmn.jl              # Coefficient calculations (c_mn)
 │       ├── SelfEnergy.jl       # Self-energy Σ computations
-│       ├── Structure.jl        # ReactionStructure type
-│       └── Variables.jl        # ReactionVariables type
+│       ├── Struct.jl           # ReactionStructure type definitions
+        ├── BlockOp.jl          # Block operator definitions
+        ├── Dynamics.jl         # Runs the dynamics and integrates the self-energies, interfaces with KB.jl 
+│       └── Var.jl              # ReactionVariables type definitions
 ├── examples/
 │   ├── enzyme_kinetics.ipynb
 │   ├── gene_regulation.ipynb
@@ -316,19 +333,22 @@ achedmy/
 ├── extras/
 │   └── other_dynamics/
 │       ├── cheMASTER/          # Master equation solver (Python)
-│       ├── emre/               # EMRE/LNA solver (Python)
-│       └── classPlefka.py      # Legacy Python implementation
-├── data/                       # Saved simulation results
+│       └── emre/               # EMRE/LNA solver (Python)
 ├── plots/                      # Generated figures
+├── LICENSE                     # License file
+├── Project.toml                # Project file -- defines dependencies
+├── Manifest.toml               # Manifest file -- exact versions of dependencies (don't edit directly) 
 └── README.md
 ```
 
 ### Key Files
 
 - **`Achedmy.jl`**: Main entry point, exports primary functions
-- **`Structure.jl`**: Parses Catalyst reactions into stoichiometry matrices
-- **`Variables.jl`**: Storage for means, correlations, responses
+- **`Struct.jl`**: Parses Catalyst reactions into stoichiometry matrices, rates, etc.
+- **`Var.jl`**: Storage for means, correlations, responses, self-energies and all other dynamic variables
 - **`SelfEnergy.jl`**: Core algorithm - computes memory kernels Σ
+- **`Dynamics.jl`**: Integrates the two-time equations using Kadanoff-Baym solvers
+- **`BlockOp.jl`**: Defines block operators for efficient matrix operations
 - **`Cmn.jl`**: Helper functions for coefficient calculations
 
 ---
@@ -412,6 +432,63 @@ end
 ```
 
 ---
+
+## Testing
+
+### Running Tests
+
+To run the full test suite:
+
+```julia
+using Pkg
+Pkg.activate(".")
+Pkg.test("Achedmy")
+```
+
+To run specific test files:
+
+```julia
+using Pkg
+Pkg.activate(".")
+include("test/test_structure.jl")
+```
+
+### Test Coverage
+
+The test suite covers:
+- ✅ Module loading and exports
+- ✅ Reaction network structure creation
+- ✅ Variable initialization (cross and single response)
+- ✅ Dynamics integration for all methods (MAK, MCA, SBR, gSBR)
+- ✅ Physical constraints (positivity, causality)
+- ✅ Self-energy calculations
+- ✅ Example systems (enzyme kinetics, gene regulation, SIR)
+
+### Continuous Integration
+
+The package uses GitHub Actions for automated testing:
+- **CI.yml**: Tests on Julia 1.6, 1.9, and latest across Linux, macOS, Windows
+- **CompatHelper.yml**: Automatically updates dependency compatibility
+- **TagBot.yml**: Automatic version tagging
+
+View build status: [![CI](https://github.com/yourusername/achedmy/workflows/CI/badge.svg)](https://github.com/yourusername/achedmy/actions)
+
+### Writing New Tests
+
+To add tests for new features:
+
+1. Create a new test file in `test/` (e.g., `test_newfeature.jl`)
+2. Add `include("test_newfeature.jl")` to `test/runtests.jl`
+3. Use `@testset` blocks to organize tests
+4. Run locally before pushing
+
+Example:
+```julia
+@testset "New Feature Tests" begin
+    @test 1 + 1 == 2
+    @test_throws ErrorException error("expected error")
+end
+```
 
 ## Troubleshooting
 

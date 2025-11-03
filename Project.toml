@@ -1,3 +1,8 @@
+name = "Achedmy"
+uuid = "your-uuid-here"  # Generate with: using UUIDs; uuid4()
+authors = ["Moshir Harsh <btemoshir@gmail.com>"]
+version = "0.1.0"
+
 [deps]
 BlockArrays = "8e7c35d0-a365-5155-bbbb-fb81a777f24e"
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
@@ -19,3 +24,5 @@ PyCall = "438e738f-606a-5dbb-bf0a-cddfbfd45ab0"
 PyPlot = "d330b81b-6aea-500a-939a-2ce795aea3ee"
 Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
 SymbolicUtils = "d1185830-fcd6-423d-90d6-eec64667417b"
+
+
