@@ -32,6 +32,10 @@ TODO: Implement proper handling of initial correlation $C_{ij}(0,0)$ values! -->
 # Achedmy.jl -- Adaptive CHEmical Dynamics using MemorY
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+<!-- [![CI](https://github.com/yourusername/achedmy/workflows/CI/badge.svg)](https://github.com/yourusername/achedmy/actions)
+[![codecov](https://codecov.io/gh/yourusername/achedmy/branch/main/graph/badge.svg)](https://codecov.io/gh/yourusername/achedmy) -->
+[![CI](https://gitlab.gwdg.de/moshir.harsh/achedmy/workflows/CI/badge.svg)](https://gitlab.gwdg.de/moshir.harsh/achedmy/actions)
+[![codecov](https://codecov.io/gh/moshir.harsh/achedmy/branch/main/graph/badge.svg)](https://codecov.io/gh/moshir.harsh/achedmy)
 
 A Julia package implementing **memory-corrected dynamics** for chemical reaction networks (CRNs) with discrete molecular number fluctuations. Achedmy captures the effects of intrinsic noise that become significant in the regime of small molecule numbers or large fluctuations, going beyond standard mean-field approximations.
 

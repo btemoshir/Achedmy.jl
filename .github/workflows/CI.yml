@@ -6,11 +6,13 @@ on:
       - main
       - master
       - dev
+      - package
   pull_request:
     branches:
       - main
       - master
       - dev
+      - package
   workflow_dispatch:
 
 jobs:
@@ -21,6 +23,7 @@ jobs:
       fail-fast: false
       matrix:
         version:
+          - '1.11.7' # Current stable
           - '1.6'  # Minimum supported version
           - '1.9'  # LTS version
           - '1'    # Latest stable
