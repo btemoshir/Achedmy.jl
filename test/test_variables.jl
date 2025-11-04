@@ -50,22 +50,7 @@
         # Check that all arrays are of correct type
         @test eltype(variables.μ) <: Real
         @test all(isfinite.(variables.μ[1]))
-        # @test all(variables.μ[1] < Inf)
+
     end
     
-    # @testset "Variable Types" begin
-    #     bd_system = @reaction_network begin
-    #         @species X(t) = 10.0
-    #         @parameters k_birth = 1.0 k_death = 0.5
-    #         k_birth, 0 --> X
-    #         k_death, X --> 0
-    #     end
-        
-    #     structure = Achedmy.ReactionStructure(bd_system)
-    #     variables = Achedmy.ReactionVariables(structure, "cross")
-        
-    #     # Check that all arrays are of correct type
-    #     @test eltype(variables.μ) <: Real
-    #     @test all(isfinite.(variables.μ))
-    # end
 end

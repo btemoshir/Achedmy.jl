@@ -14,6 +14,5 @@ using LinearAlgebra
     include("test_structure.jl")
     include("test_variables.jl")
     include("test_dynamics.jl")
-    # include("test_selfenergy.jl")
-    # include("test_examples.jl")
+    
 end
