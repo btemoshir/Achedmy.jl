@@ -151,98 +151,10 @@ function self_energy_alpha2!(structure, variables, times, h1, h2 , t, t′)
 
     end
 end
-
-function self_energy_SBR_legacy!(structure, variables, times, h1, h2 , t, t′)
-    """
-    SBR corrections to the self-energy. Does not mix different n     
-    -- IGNORE --
-    """
-
-    # Resize self-energies when Green functions are resized    
-    if (n = size(variables.R, 2)) > size(variables.Σ_R, 2)
-        resize!(variables.Σ_R, n)
-        resize!(variables.Σ_μ, n)
-    end
-    #print(t,t′,"\n")
-            
-    if t′ == 1
-
-        temp0  = zeros(Int,structure.num_species)
-        id     = diagm(ones(t))
-        L      = diagm(-1=>ones(t-1))
-        
-        variables.Σ_μ[:,t,1:t] .= 0.
-        variables.Σ_R[:,t,1:t] .= 0.
-
-        #Temporary variables declared to hold the field values!
-        Σ_R_temp = zero(variables.Σ_R[:,t,1:t]) 
-        Σ_μ_temp = zero(variables.Σ_μ[:,t,1:t])
-
-        for i in 1:structure.num_species
-
-            temp1    = zeros(Int,structure.num_species)
-            temp1[i] = 1
-
-            Σ_R_temp[i,t] += c_mnFULL(structure,variables,temp1,temp1,t+1)./h1[t]
-            Σ_μ_temp[i,t] += c_mnFULL(structure,variables,temp1,temp0,t+1)./h1[t]
-
-        end
-
-        for n in structure.n_list_union
-
-            #This loop is executed iff cnn != 0 #and cN0 != 0
-            if c_mnFULL_test(structure,variables,n,n) != 0 && c_mnFULL_test(structure,variables,n,temp0) != 0
-
-                cNN = collect(c_mnFULL(structure,variables,n,n,tt) for tt in 1:t)
-                
-                # IMP -- +1 has been added to the time index of cNN compared to previous version!
-                        
-                #cNN = collect(c_mnFULL(structure,variables,n,n,tt+1) for tt in 1:t)
-                Γ   = collect(prod(factorial.(n) .* variables.R[:,tt,ttt] .^n) for tt in 1:t, ttt in 1:t)                
-                cN0 = collect(c_mnFULL(structure,variables,n,temp0,ttt).*Γ[tt,ttt] for tt in 1:t, ttt in 1:t)
-
-                #The following creates the \Chi matrix (with the shift), but also multiples the columns by the time step size
-                χ   = collect(cNN[ttt].*Γ[tt,ttt].*h1[ttt] for tt in 1:t, ttt in 1:t)*L
-                        
-                #Where does L multiply?? REDO -- CHECK!! IMP
-                #χ   = L*collect(cNN[ttt].*Γ[tt,ttt].*h1[ttt] for tt in 1:t, ttt in 1:t)
-                        
-                Ξ   = tril(id .- χ)      #Make the matrix ecplicitly lower triangular!
-                LAPACK.trtri!('L','U',Ξ) #LAPAC functions to invert the triangular matrix here!
-                ΞcN0 = Ξ*cN0
-
-                for i in 1:structure.num_species
-
-                    temp1    = zeros(Int,structure.num_species)
-                    temp1[i] = 1
-
-                    if n ∉ [temp0,temp1] && c_mnFULL_test(structure,variables,n,temp1) != 0 && c_mnFULL_test(structure,variables,temp1,n) != 0
-                        cN1  = collect(c_mnFULL(structure,variables,n,temp1,ttt).*Γ[tt,ttt] for tt in 1:t, ttt in 1:t)
-                        ΞcN1 = Ξ*cN1
-
-                        Σ_R_temp[i,1:t] += (c_mnFULL(structure,variables,temp1,n,t+1).*ΞcN1)[t,1:t]
-                        #print("R ",(c_mnFULL(structure,variables,temp1,n,t+1).*ΞcN1)[t,1:t],"\n")
-                    end
-
-                    if n ∉ push!(collect.(Int.(I[1:structure.num_species,k]) for k in 1:structure.num_species),temp0)
-
-                        Σ_μ_temp[i,1:t] += (c_mnFULL(structure,variables,temp1,n,t+1).*ΞcN0)[t,1:t]
-                        #print("mu ",(c_mnFULL(structure,variables,temp1,n,t+1).*ΞcN0)[t,1:t],"\n")
-
-                    end
-                end
-            end
-        end            
-                
-        variables.Σ_R[:,t,1:t] .= Σ_R_temp[:,1:t] 
-        variables.Σ_μ[:,t,1:t] .= Σ_μ_temp[:,1:t] 
-
-    end
-end
         
 function self_energy_SBR!(structure, variables, times, h1, h2 , t, t′)
     """
-    SBR corrections to the self-energy. Does not mix different n     
+    SBR corrections to the self-energy. Does not mix different n , i.e. fluctuations from different reactions are not mixed here.    
     """
 
     # Resize self-energies when Green functions are resized    
@@ -562,7 +474,7 @@ end
 
 function self_energy_alpha2_cross!(structure, variables, times, h1, h2 , t, t′)    
     """
-    mode coupling approximation (MCA) i.e. O(α^2) corrections to the self-energy with different n being mixed    
+    Mode coupling approximation (MCA) i.e. O(α^2) corrections to the self-energy with different n being mixed    
     """
 
     # Resize self-energies when Green functions are resized    

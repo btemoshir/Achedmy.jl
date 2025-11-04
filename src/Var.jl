@@ -52,6 +52,10 @@ function ReactionVariables(reaction_system::ReactionStructure,response_type="cro
     - reaction_system: class(ReactionStructure)
     - response_type : string
                     "single" or "cross"
+
+    Outputs
+    -------
+    - variables : class(ReactionVariables)
     """
     
     

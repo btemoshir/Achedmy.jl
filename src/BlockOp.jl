@@ -38,19 +38,10 @@ function block_tri_lower_inverse(mat)
     mat should have the first two dimensions coressponding to the block of n, the last two to the time. Assumes there are 1's on the diagonal!
     
     """
-    
-    #for row in range(1,len_rows):
-    #    D_inv  = np.linalg.inv(mat[:,:,row,row]) #Can get rid of this in principle!
-    #    temp_n = np.einsum('ijl,jmlo->imo',mat[:,:,row,:row+1],inv[:,:,:row+1,:row+1],optimize='greedy')
-    #    inv[:,:,row,:row+1] = np.einsum('ij,jmk->imk',D_inv,(block_identity(len_n,row+1)[:,:,row]-temp_n[:,:,:row+1]), optimize='greedy')
-        
-        #print(D_inv)
-    
-    #TODO ----- 
                         
     len_rows = size(mat, 3)
     len_n    = size(mat, 1)
-    invM     = zeros(size(mat)) #similar(mat)
+    invM     = zeros(size(mat))
     
     invM[:, :, 1, 1] .= inv(mat[:, :, 1, 1])
 
@@ -60,7 +51,6 @@ function block_tri_lower_inverse(mat)
         inv_copy = deepcopy(invM[:,:,1:row,1:row])
         
         @einsum temp_n[i,m,o] := mat_copy[i,j,l] * inv_copy[j,m,l,o]
-                       #temp_n2 = block_identity(len_n,row+1)[:,:,row].-temp_n[:,:,1:row]
                 temp_n2 = block_identity(len_n,row)[:,:,row,1:row] .- temp_n[:,:,1:row]
         @einsum inv_temp[i,m,k] := D_inv[i,j] * temp_n2[j,m,k]
         
@@ -97,7 +87,6 @@ function block_lower_shift(mat)
     L = diagm(-1 => ones(len_rows - 1))
 
     @einsum shifted[i,j,k,m] :=  mat[i,j,k,l] * L[l,m]
-    #@einsum shifted[i,j,k,m] :=  L[k,l] * mat[i,j,l,m] 
     
     return shifted
                                     
@@ -200,36 +189,26 @@ function response_combinations(n1,n2,R)
     
     """
     
-    #resp_comb = zero(R[2:])
-
-    x1 = findall(n1 .!= 0)#[1]
-    x2 = findall(n2 .!= 0)#[1]
-
-    #print(x1)
+    x1 = findall(n1 .!= 0)
+    x2 = findall(n2 .!= 0)
     
     if length(x1) == 2 && length(x2) == 2
     
-        #resp_comb = R[x1[1],x2[1],:,:].*R[x1[2],x2[2],:,:] .+ R[x1[1],x2[2],:,:].*R[x1[2],x2[1],:,:]
         resp_comb = R[x1[1],x2[1]].*R[x1[2],x2[2]] .+ R[x1[1],x2[2]].*R[x1[2],x2[1]]
         
     elseif length(x1) == 1 && length(x2) == 2
         
-        #resp_comb = 2. .*R[x1[1],x2[1],:,:].*R[x1[1],x2[2],:,:]
         resp_comb = 2. .*R[x1[1],x2[1]].*R[x1[1],x2[2]]
     
     elseif length(x1) == 2 && length(x2) == 1
         
-        #resp_comb = 2. .*R[x1[1],x2[1],:,:].*R[x1[2],x2[1],:,:]
         resp_comb = 2. .*R[x1[1],x2[1]].*R[x1[2],x2[1]]
         
     elseif length(x1) == 1 && length(x2) == 1
         
-        #resp_comb = 2. .*R[x1[1],x2[1],:,:].*R[x1[1],x2[1],:,:]
         resp_comb = 2. .*R[x1[1],x2[1]].*R[x1[1],x2[1]]
         
     end
-
-    #print(resp_comb,"\n")
         
     return resp_comb
         

@@ -1,4 +1,7 @@
 function mnList(structure)
+    """
+    Creates the m-list and n-list for each reaction individually as well as the FULL lists across all reactions
+    """
     
     num_int = structure.num_interactions
     num_species = structure.num_species
@@ -57,11 +60,6 @@ function mnList(structure)
     
 end
 
-
-#m_list, n_list, m_listFULL, n_listFULL, m_listNEW, n_listNEW = mnList(structure_aaa)
-
-
-
 function c_mn_no_mu(structure,int_rxn_index,m,n)
     """
     Creates the c_mn for each individual beta reaction (without the μ factors)
@@ -98,7 +96,7 @@ function c_mn(structure,variables,int_rxn_index,m,n,time)
         ) .- prod(binomial.(structure.stochiometry_react[:,int_rxn_index],m).*(1 .^(structure.stochiometry_react[:,int_rxn_index].-m) )
         )).*prod(binomial.(structure.stochiometry_react[:,int_rxn_index],n)).*prod(variables.μ[:,time-1] .^(structure.stochiometry_react[:,int_rxn_index].-n))
         
-        #Note that this cmn is defined with the time shift t- in \mu! ## PAY ATTENTION!
+        #Note that this cmn is defined with the time shift t- in \mu!
                 
         else
             c_mnBeta = 0.
@@ -123,13 +121,12 @@ function c_mnFULL(structure,variables,m,n,time)
 end
 
 function c_mnFULL_test(structure,variables,m,n)
-    
-    #This function tests if a partciular cmn_full (no_mu) is zero or not.
-    
+    """
+    This function tests if a partciular cmn_full (no_mu) is zero or not.
+    """
+
     retval = 0.
-    
-    #TODO this thing
-    
+        
     for k in 1:structure.num_interactions
         retval += c_mn_no_mu(structure,k,m,n)
     end
@@ -153,9 +150,7 @@ function create_c_mn_dict(structure,variables,m_list,n_list)
             for n in n_list[int_rxn_index]
                 
                 #Can already NOT SAVE many of the c_mn which are zero at this point!
-                
                 c_mn_dict[(int_rxn_index,m,n)] = c_mn_no_mu(structure,int_rxn_index,m,n)
-                #c_mn_dict[(int_rxn_index,tuple(m),tuple(n))] = c_mn_no_mu(structure,int_rxn_index,m,n)
             
             end
         end

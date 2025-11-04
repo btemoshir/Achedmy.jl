@@ -41,8 +41,9 @@ function ReactionStructure(reaction_system::ReactionSystem;external_initializati
                        If False, the initial values of the correlations (C[0,0]) are set to zero.
                        Note that depending on the situation, the initial_correlation value may be different from the true initial number-number correlations, see conversion formulas in the paper.
                        Take care of the order of species. The order is defined in the reaction_system!
-                       TODO: Take proper care of the order of species in the initial_correlations, so there is no ambiguity and it is defined according to the species names.
-
+                       Note: Non-zero initial correlations are currently not supported, but will be added in future versions.
+                       
+    #TODO: Take proper care of the order of species in the initial_correlations, so there is no ambiguity and it is defined according to the species names.
     #TODO: Check the initial correlation definition in Boolean context
     """
     
@@ -58,6 +59,7 @@ function ReactionStructure(reaction_system::ReactionSystem;external_initializati
 
     if initial_correlations
         initial_C = initial_correlations
+        @warn "Non-zero initial correlations are currently not supported but will be added in future versions. Please open a feature request or Github issue if you need this functionality."
     else
         initial_C = zeros(numspecies(reaction_system))
         # In the function Reaction Variables, we check if the dimensions of the initial_C (if initial_C was zero) are correct and resize if necessary
@@ -128,9 +130,6 @@ function ReactionStructure(reaction_system::ReactionSystem;external_initializati
         n_list_union = []
         m_list_union = []
     end
-    
-    # n_list_union = union(collect.(n_list[j] for j in 1:num_int)...)
-    # m_list_union = union(collect.(m_list[j] for j in 1:num_int)...)
     
     return ReactionStructure(num_species = numspecies(reaction_system),
                                            num_interactions  = num_int,

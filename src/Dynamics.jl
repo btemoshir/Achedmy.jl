@@ -9,16 +9,17 @@ function solve_dynamics!(structure,variables; selfEnergy="gSBR", tmax=1., tstart
     ------
     - structure
     - variables
-    - atol
-    - rtol
-    - tmax
-    - tstart
     - selfEnergy: string
                 What kind of self-energy to use, "gSBR", "SBR", "MAK", "MCA"
                 'gSBR'    -- generalized SBR corrections to the self-energy with different n being mixed (Slow)
                 'SBR'     -- SBR corrections to the self-energy. Does not mix different n (reaction) vectors, i.e the fluctuations in different reactions are independent. (Faster)
                 'MCA'     -- Mode coupling approximation or the O(α^2) corrections to the self-energy, 
                 'MAK'     -- Mass action kinetics (MAK) or the Mean field or O(α) corrections to the self-energy
+    - atol
+    - rtol
+    - tmax
+    - tstart
+    
     - for other parameters see kbsolve! documentation
 
     Outputs
