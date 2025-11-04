@@ -1,5 +1,5 @@
 name = "Achedmy"
-uuid = "your-uuid-here"  # Generate with: using UUIDs; uuid4()
+uuid = "3809e951-761c-4e21-b9ed-bc66e666ef58"
 authors = ["Moshir Harsh <btemoshir@gmail.com>"]
 version = "0.1.0"
 
@@ -8,21 +8,28 @@ BlockArrays = "8e7c35d0-a365-5155-bbbb-fb81a777f24e"
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 Catalyst = "479239e8-5488-4da2-87a7-35f2df7eef83"
 ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
-Conda = "8f4d0f93-b110-5947-807f-2305c1781a2d"
-DifferentialEquations = "0c46a032-eb83-5123-abaf-570d42b7fbaa"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 Einsum = "b7d42ee7-0b51-5a75-98ca-779d3107e4c0"
-Interpolations = "a98d9a8b-a2ab-59e6-89dd-64a1c18fca59"
-IterTools = "c8e1da08-722c-5040-9ed9-7db0dc04731e"
 KadanoffBaym = "82532805-809c-4ef0-842b-4b00c5e9be5f"
-Latexify = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
-ModelingToolkit = "961ee093-0014-501f-94e3-6117800e7a78"
-MomentClosure = "01a1b25a-ecf0-48c5-ae58-55bfd5393600"
 Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 PyCall = "438e738f-606a-5dbb-bf0a-cddfbfd45ab0"
 PyPlot = "d330b81b-6aea-500a-939a-2ce795aea3ee"
-Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
+MomentClosure = "01a1b25a-ecf0-48c5-ae58-55bfd5393600"
+Conda = "8f4d0f93-b110-5947-807f-2305c1781a2d"
+Interpolations = "a98d9a8b-a2ab-59e6-89dd-64a1c18fca59"
+IterTools = "c8e1da08-722c-5040-9ed9-7db0dc04731e"
+Latexify = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
+ModelingToolkit = "961ee093-0014-501f-94e3-6117800e7a78"
+DifferentialEquations = "0c46a032-eb83-5123-abaf-570d42b7fbaa"
 SymbolicUtils = "d1185830-fcd6-423d-90d6-eec64667417b"
 
+[compat]
+julia = "1.11.7"
+KadanoffBaym = "1.2"
 
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
