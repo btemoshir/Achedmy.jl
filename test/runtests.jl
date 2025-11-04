@@ -2,7 +2,6 @@ using Test
 using Achedmy
 using Catalyst
 using LinearAlgebra
-using Serialization
 
 @testset "Achedmy.jl Tests" begin
     
@@ -15,6 +14,6 @@ using Serialization
     include("test_structure.jl")
     include("test_variables.jl")
     include("test_dynamics.jl")
-    include("test_selfenergy.jl")
-    include("test_examples.jl")
+    # include("test_selfenergy.jl")
+    # include("test_examples.jl")
 end

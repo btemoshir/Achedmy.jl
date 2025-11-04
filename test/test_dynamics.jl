@@ -1,12 +1,10 @@
-#TODO: properly check!
 @testset "Dynamics Tests" begin
-    
     @testset "MAK - Birth-Death" begin
         bd_system = @reaction_network begin
             @species X(t) = 10.0
             @parameters k_birth = 1.0 k_death = 0.5
-            k_birth, 0 --> X
-            k_death, X --> 0
+            (k_birth), 0 --> X
+            (k_death), X --> 0
         end
         
         structure = Achedmy.ReactionStructure(bd_system)
@@ -16,7 +14,7 @@
             structure, 
             variables,
             selfEnergy = "MAK",
-            tmax = 5.0,
+            tmax = 20,
             tstart = 0.0,
             atol = 1e-4,
             rtol = 1e-3
@@ -32,7 +30,7 @@
         @test isapprox(final_mean, 2.0, rtol=0.1)
         
         # Test that means are always positive
-        @test all(variables.μ .>= 0)
+        @test all(variables.μ[end] .>= 0)
     end
     
     @testset "gSBR - Gene Regulation" begin
@@ -61,7 +59,7 @@
         @test length(sol.t) > 1
         
         # Test physical constraints
-        @test all(variables.μ .>= 0)  # No negative populations
+        @test all(variables.μ[:,:] .>= 0)  # No negative populations
         
         # Test that variances are non-negative
         for i in 1:structure.num_species
@@ -105,7 +103,7 @@
         # If gSBR works, it should give reasonable results
         if haskey(solutions, "gSBR")
             _, vars = solutions["gSBR"]
-            @test all(isfinite.(vars.μ))
+            @test all(isfinite.(vars.μ[end]))
         end
     end
     

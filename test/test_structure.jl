@@ -1,12 +1,12 @@
 @testset "ReactionStructure Tests" begin
     
-    @testset "Simple Birth-Death Process" begin
+    @testset "Simple_Birth-Death Process" begin
         # Define simple birth-death system
         bd_system = @reaction_network begin
             @species X(t) = 10.0
             @parameters k_birth = 1.0 k_death = 0.5
-            k_birth, 0 --> X
-            k_death, X --> 0
+            (k_birth), 0 --> X
+            (k_death), X --> 0
         end
         
         # Create structure
@@ -15,14 +15,12 @@
         # Test basic properties
         @test structure.num_species == 1
         @test structure.num_reactions == 2
-        @test length(structure.rates) == 2
-        @test structure.rates[1] == 1.0
-        @test structure.rates[2] == 0.5
+        @test structure.rate_creation[1] == 1.0
+        @test structure.rate_destruction[1] == 0.5
         
         # Test stoichiometry
-        @test size(structure.stoich_mat) == (1, 2)
-        @test structure.stoich_mat[1, 1] == 1  # Birth adds 1
-        @test structure.stoich_mat[1, 2] == -1  # Death removes 1
+        @test size(structure.stochiometry_prod) == (1, 0)
+        @test size(structure.stochiometry_react) == (1, 0)
         
         # Test initial conditions
         @test structure.initial_values[1] == 10.0
@@ -40,7 +38,7 @@
         structure = Achedmy.ReactionStructure(gene_system)
         
         @test structure.num_species == 2
-        @test structure.num_reactions == 4
+        @test structure.num_reactions == 5
         @test length(structure.initial_values) == 2
         @test structure.initial_values[2] == 10.0
     end
@@ -59,8 +57,17 @@
         
         @test structure.num_species == 4
         @test all(structure.initial_values .>= 0)
-        
-        # Test that bimolecular reactions are properly handled
-        @test size(structure.stoich_mat, 1) == 4
+
+        # Test that bimolecular reactions and enzyme kinetics are properly handled
+
+        @test structure.stochiometry_prod[:, 1] == [0,0,1,0]
+        @test structure.stochiometry_react[:, 1] == [1,1,0,0]
+
+        @test structure.stochiometry_prod[:, 2] == [1,1,0,0]
+        @test structure.stochiometry_react[:, 2] == [0,0,1,0]
+
+        @test structure.stochiometry_prod[:, 3] == [0,1,0,1]
+        @test structure.stochiometry_react[:, 3] == [0,0,1,0]
+
     end
 end
