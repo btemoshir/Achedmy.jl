@@ -1,9 +1,39 @@
+# Data and outputs
 data/
-*.workspace
+
+# Jupyter
 *.ipynb_checkpoints/
 *checkpoint.ipynb
+.ipynb_checkpoints
+
+# IDE
+*.workspace
 *.DS_Store
-*.vscode/
-__pycache__/
+.vscode/
 *.code-workspace
+.idea/
+
+# Python
+__pycache__/
 *__pycache__*
+*.pyc
+*.pyo
+*.egg-info/
+.pytest_cache/
+
+# Julia
+Manifest.toml          # ← Add this for packages
+*.jl.*.cov
+*.jl.cov
+*.jl.mem
+/docs/build/
+/docs/site/
+
+# Local experiments
+scratch/
+temp/
+tmp/
+
+# OS
+.DS_Store
+Thumbs.db

@@ -315,6 +315,7 @@ jupyter notebook enzyme_kinetics.ipynb
 
 ## Package Structure
 
+
 ```
 achedmy/
 ├── src/
@@ -323,9 +324,14 @@ achedmy/
 │       ├── Cmn.jl              # Coefficient calculations (c_mn)
 │       ├── SelfEnergy.jl       # Self-energy Σ computations
 │       ├── Struct.jl           # ReactionStructure type definitions
-        ├── BlockOp.jl          # Block operator definitions
-        ├── Dynamics.jl         # Runs the dynamics and integrates the self-energies, interfaces with KB.jl 
+│       ├── BlockOp.jl          # Block operator definitions
+│       ├── Dynamics.jl         # Runs the dynamics and integrates the self-energies
 │       └── Var.jl              # ReactionVariables type definitions
+├── test/
+│   ├── runtests.jl            # Main test suite entry point
+│   ├── test_structure.jl      # Tests for ReactionStructure
+│   ├── test_variables.jl      # Tests for ReactionVariables
+│   └── test_dynamics.jl       # Tests for solve_dynamics!
 ├── examples/
 │   ├── enzyme_kinetics.ipynb
 │   ├── gene_regulation.ipynb
@@ -334,11 +340,15 @@ achedmy/
 │   └── other_dynamics/
 │       ├── cheMASTER/          # Master equation solver (Python)
 │       └── emre/               # EMRE/LNA solver (Python)
+├── .github/
+│   └── workflows/
+│       ├── CI.yml              # Continuous Integration workflow
+│       ├── CompatHelper.yml    # Dependency compatibility checker
+│       └── TagBot.yml          # Automatic version tagging
 ├── plots/                      # Generated figures
-├── LICENSE                     # License file
-├── Project.toml                # Project file -- defines dependencies
-├── Manifest.toml               # Manifest file -- exact versions of dependencies (don't edit directly) 
-└── README.md
+├── LICENSE                     # MIT License
+├── Project.toml                # Project dependencies
+└── README.md                   # This file
 ```
 
 ### Key Files
