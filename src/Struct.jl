@@ -1,4 +1,79 @@
+"""
+    ReactionStructure
 
+Stores the stoichiometry and rate information for a chemical reaction network.
+
+# Fields
+
+- `num_species::Int`: Number of chemical species in the network
+- `num_interactions::Int`: Number of interaction reactions (non-baseline reactions or reactions other than simple creation/destruction)
+- `num_reactions::Int`: Total number of reactions (creation + destruction + interactions)
+- `rate_creation::Vector{Float64}`: Rate constants for spontaneous creation reactions
+- `rate_destruction::Vector{Float64}`: Rate constants for destruction reactions
+- `rate_interaction::Vector{Float64}`: Rate constants for interaction reactions
+- `stochiometry_prod::Matrix{Int}`: Stoichiometry matrix for products for each `interaction` reaction
+- `stochiometry_react::Matrix{Int}`: Stoichiometry matrix for reactants for each `interaction` reaction
+- `initial_values::Vector{Float64}`: Initial molecular counts for each species
+- `n_list`: List of reaction vectors for generating combinatorial structures
+- `n_list_union`: Union of all reaction vectors
+- `m_list`: List of auxiliary reaction vectors
+- `m_list_union`: Union of auxiliary reaction vectors
+- `initial_C::Union{Vector{Float64}, Matrix{Float64}}`: Initial correlations C(0,0) - can be a vector for single-species or matrix for inter-species correlations
+
+# Constructor
+
+    ReactionStructure(reaction_system::ReactionSystem; 
+                     external_initialization=false,
+                     initial_correlations=false)
+
+Create a `ReactionStructure` from a Catalyst `ReactionSystem`.
+
+# Arguments
+
+- `reaction_system::ReactionSystem`: Catalyst reaction network
+- `external_initialization::Union{Dict,Bool}=false`: External rates/values not in Catalyst define `reaction_system`
+- `initial_correlations::Union{Vector,Matrix,Bool}=false`: Initial correlation values C(0,0)
+  - `Vector`: For single-species correlations (size: num_species)
+  - `Matrix`: For cross-species correlations (size: num_species × num_species)
+  - `false`: Zero initial correlations (default)
+
+Reactions are categorized as:
+1. **Creation**: ∅ → A (rate: k₁)
+2. **Destruction**: A → ∅ (rate: k₂)
+3. **Interactions**: A + B → C (rate: k₃)
+
+# Example
+
+```julia
+using Catalyst, Achedmy
+
+# Define gene regulation network
+gene_network = @reaction_network begin
+    @species G(t)=0.01 P(t)=10.0
+    @parameters k_on=0.1 k_off=1.0 k_p=10.0 k_d=1.0
+    (k_on, k_off), 0 <--> G
+    k_p, G --> G + P
+    k_d, P --> 0
+end
+
+# Create structure
+structure = ReactionStructure(gene_network)
+println("Number of species: ", structure.num_species)
+println("Initial protein count: ", structure.initial_values[2])
+println("Creation rates: ", structure.rate_creation)
+```
+
+# Notes
+
+- Non-zero initial correlations are currently not supported but planned for future versions
+- Species order is determined by the order in the `ReactionSystem`
+- External initialization is useful for parameter sweeps
+
+# See Also
+
+- [`ReactionVariables`](@ref): Storage for dynamical variables
+- [`solve_dynamics!`](@ref): Solve the dynamics
+"""
 Base.@kwdef struct ReactionStructure{T1,T2,T3,T4,T5,T6,T7,T8,T9}
     
     num_species::T1      = 0
@@ -25,27 +100,6 @@ Base.@kwdef struct ReactionStructure{T1,T2,T3,T4,T5,T6,T7,T8,T9}
 end
 
 function ReactionStructure(reaction_system::ReactionSystem;external_initialization=false,initial_correlations=false)
-    
-    """
-    Converts a reaction structure from ReactionSystem class from Catalyst.jl and creates the ReactionStructure class to be used in Achedmy.
-    
-    Inputs:
-    --------
-    - reaction_system: class(ReactionSystem)
-    - external_initialization : Dict or False
-                       If a Dictionary is supplied, it is useful to provide external rates and starting values not defined in reaction_system
-                       The Dictionary should be of type {Any,Any} and the keys (the rates and species) should be defined by using the @unpack macro, see examples.
-    - initial_correlations : vector, matrix or False
-                       If a vector size(num_species), the initial values of the correlations (C[0,0]) are set to the vector. To be used when using single species response functions.
-                       If a matrix of size(num_species,num_species), the initial values of the correlations (including the interspecies correlations) (C[0,0]) are set to the matrix. To be used when using cross species response functions.
-                       If False, the initial values of the correlations (C[0,0]) are set to zero.
-                       Note that depending on the situation, the initial_correlation value may be different from the true initial number-number correlations, see conversion formulas in the paper.
-                       Take care of the order of species. The order is defined in the reaction_system!
-                       Note: Non-zero initial correlations are currently not supported, but will be added in future versions.
-                       
-    #TODO: Take proper care of the order of species in the initial_correlations, so there is no ambiguity and it is defined according to the species names.
-    #TODO: Check the initial correlation definition in Boolean context
-    """
     
     num_int        = 0
     num_species    = numspecies(reaction_system)

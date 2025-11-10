@@ -1,32 +1,187 @@
-include("SelfEnergy.jl")
+"""
+    solve_dynamics!(structure, variables; kwargs...)
 
+Solve the memory-corrected dynamics for a chemical reaction network.
+
+# Arguments
+
+- `structure::ReactionStructure`: Reaction network structure with stoichiometry and rates
+- `variables::ReactionVariables`: Storage container for dynamical variables (modified in-place)
+
+## Approximation Method
+- `selfEnergy::String = "gSBR"`: Self-energy approximation scheme
+  - `"gSBR"`: Generalized self-consistent bubble resummation **Recommended**
+  - `"SBR"`: Self-consistent bubble resummation (single-species only, ignores the joint fluctuations induced by different reactions)
+  - `"MCA"`: Mode coupling approximation (perturbative to O(α²))
+  - `"MAK"`: Mass action kinetics (mean-field, no memory)
+
+## Time Parameters
+- `tstart::Float64 = 0.0`: Initial time
+- `tmax::Float64 = 1.0`: Final simulation time
+
+## Solver Tolerances
+- `atol::Float64 = 1e-3`: Absolute tolerance for adaptive solver
+- `rtol::Float64 = 1e-2`: Relative tolerance for adaptive solver
+
+## Advanced Solver Parameters
+- `k_max::Int = 12`: Maximum interpolation order
+- `dtini::Float64 = 0.0`: Initial time step (0 = auto)
+- `dtmax::Float64 = Inf`: Maximum time step
+- `qmax::Float64 = 5`: Maximum step size growth factor
+- `qmin::Float64 = 1//5`: Minimum step size shrink factor
+- `γ::Float64 = 9//10`: Safety factor for step size adaptation
+- `kmax_vie::Int = k_max ÷ 2`: Maximum order for Volterra integral equations
+
+# Returns
+
+- `sol`: Solution object from `kbsolve!` with fields:
+  - `t::Vector{Float64}`: Adaptive time grid
+  - `w::Vector{Vector{Float64}}`: Integration weights at each time step
+  - `retcode::Symbol`: Solution status (`:Success` if converged)
+
+# Side Effects
+
+The `variables` object is modified in-place with computed values:
+- `variables.μ`: Mean trajectories
+- `variables.R`: Response functions
+- `variables.C`: Correlation functions
+- `variables.N`: Number-number correlators
+- `variables.Σ_R`, `variables.Σ_μ`, `variables.Σ_B`: Self-energies
+
+# Algorithm
+
+Solves coupled integro-differential Kadanoff-Baym equations:
+
+```math
+\\begin{aligned}
+\\partial_t \\mu_i(t) &= k_{1i} - k_{2i} \\mu_i(t) + \\Sigma_\\mu^{i}(t) \\\\
+(\\partial_t &+ k_{2i}) R_{ij}(t,t') &= \\delta(t-t') \\delta_{ij} + \\int_{t'}^{t} d\\tau'' \\, \\sum_k \\Sigma_R^{ik}(t,\\tau'') R_{kj}(\\tau'',t')
+\\end{aligned}
+```
+
+where self-energies \$\\Sigma\$ are computed according to the chosen approximation method.
+
+# Approximation Methods Explained
+
+## gSBR (Generalized Self-consistent Bubble Resummation) ⭐
+- **Accuracy**: Best available, validated against numerical solutions of the master equation
+- **Includes**: All cross-species and cross-reaction corrections and full memory effects
+- **Use when**: Accuracy is critical, small molecule numbers
+- **Works with**: Both "single" and "cross" response types
+
+## SBR (Self-consistent Bubble Resummation)
+- **Accuracy**: Good for weakly coupled systems
+- **Includes**: Only diagonal self-energies, no cross-species nor cross-reaction memory corrections
+- **Use when**: Species are weakly coupled
+- **Restriction**: Only works with "single" response type
+
+## MCA (Mode Coupling Approximation)
+- **Accuracy**: Perturbative O(α²) correction to MAK
+- **Includes**: Leading-order fluctuation corrections
+- **Use when**: Fluctuations are weak
+- **Unstable**: May lead to numerical instabilities in most cases with large reaction rates
+- **Works with**: Both "single" and "cross" response types
+
+## MAK (Mass Action Kinetics)
+- **Accuracy**: Mean-field only, no fluctuations
+- **Includes**: No memory effects
+- **Use when**: Quick baseline comparison needed
+- **Limitation**: Fails for small molecule counts
+
+# Example
+
+```julia
+using Achedmy, Catalyst
+
+# Define Michaelis-Menten enzyme kinetics
+enzyme = @reaction_network begin
+    @species S(t)=1.0 E(t)=0.9 C(t)=0.1 P(t)=0.0
+    @parameters k_f=1.0 k_b=0.1 k_cat=1.0
+    (k_f, k_b), S + E <--> C
+    k_cat, C --> E + P
+end
+
+# Setup
+structure = ReactionStructure(enzyme)
+variables = ReactionVariables(structure, "cross")
+
+# Solve with high accuracy
+sol = solve_dynamics!(
+    structure, 
+    variables,
+    selfEnergy = "gSBR",
+    tmax = 5.0,
+    tstart = 0.0,
+    atol = 1e-4,
+    rtol = 1e-3
+)
+
+# Check convergence
+@assert sol.retcode == :Success "Solver did not converge!"
+
+# Extract results
+time = sol.t
+mean_product = variables.μ[4, :]  # P(t)
+variance_product = diag(variables.N[4,4,:,:])  # Var[P(t)]
+response_SE = variables.R[1,2,:,:]  # How E responds to perturbation in S
+
+# Visualize
+using PyPlot
+figure(figsize=(10,4))
+subplot(121)
+plot(time, mean_product)
+xlabel("Time")
+ylabel("⟨P(t)⟩")
+
+subplot(122)
+plot(time, variance_product)
+xlabel("Time")
+ylabel("Var[P(t)]")
+```
+
+# Performance Tips
+
+1. **Start loose, tighten if needed**: Begin with `atol=1e-3`, `rtol=1e-2`
+2. **Time range**: Longer `tmax` increases cost quadratically or cubically due to memory integrals
+3. **Method selection**:
+   - Production runs: `gSBR` with `"cross"`
+   - Large systems (>10 species): `gSBR` with `"single"`
+   - Quick tests: `MAK` or `MCA`
+4. **Tolerance tuning**: If variances go negative, decrease tolerances
+
+# Common Issues
+
+## Negative Variances
+**Problem**: `diag(variables.N[i,i,:,:])` contains negative values
+
+**Solutions**:
+- Decrease `atol` and `rtol` (e.g., `1e-5`)
+- Use `"cross"` response type instead of `"single"`
+- Reduce `tmax` or increase `dtmax` to limit time range
+- Check that initial conditions are physical (non-negative)
+
+## Slow Convergence
+**Problem**: Simulation takes too long
+
+**Solutions**:
+- Increase tolerances to `atol=1e-2`, `rtol=1e-1`
+- Switch from `"cross"` to `"single"` response type
+- Use `SBR` or `MCA` instead of `gSBR`
+- Reduce `tmax` or limit time range
+
+## SBR with cross response error
+**Problem**: Error when using `selfEnergy="SBR"` with `response_type="cross"`
+
+**Solution**: Use `selfEnergy="gSBR"` or change to `response_type="single"`
+
+# See Also
+
+- [`ReactionStructure`](@ref): Define reaction networks
+- [`ReactionVariables`](@ref): Storage container
+- [KadanoffBaym.jl](https://nonequilibriumdynamics.github.io/KadanoffBaym.jl/): Underlying solver
+- [Catalyst.jl](https://docs.sciml.ai/Catalyst/stable/): Reaction network DSL
+"""
 function solve_dynamics!(structure,variables; selfEnergy="gSBR", tmax=1., tstart=0., atol=1e-3, rtol=1e-2, k_max = 12, dtini = 0.0, dtmax = Inf, qmax=5, qmin=1 // 5, γ=9 // 10, kmax_vie = k_max ÷ 2)
-    
-    """
-    Solve the dynamics using KB.jl solver. Changes the variables in place.
-    
-    Inputs
-    ------
-    - structure
-    - variables
-    - selfEnergy: string
-                What kind of self-energy to use, "gSBR", "SBR", "MAK", "MCA"
-                'gSBR'    -- generalized SBR corrections to the self-energy with different n being mixed (Slow)
-                'SBR'     -- SBR corrections to the self-energy. Does not mix different n (reaction) vectors, i.e the fluctuations in different reactions are independent. (Faster)
-                'MCA'     -- Mode coupling approximation or the O(α^2) corrections to the self-energy, 
-                'MAK'     -- Mass action kinetics (MAK) or the Mean field or O(α) corrections to the self-energy
-    - atol
-    - rtol
-    - tmax
-    - tstart
-    
-    - for other parameters see kbsolve! documentation
-
-    Outputs
-    -------
-    - sol: solution object from kbsolve! sol.t with the time steps and sol.w with the weights at each time step (step size)
-    - variables: updated in place with the new values of μ, R, C, N and Σ_μ, Σ_R, Σ_B
-    """
     
     #Define which self-energy to use:
     if variables.response_type == "single"
