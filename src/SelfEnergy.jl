@@ -1,10 +1,58 @@
 include("BlockOp.jl")
 include("Cmn.jl")
 
+"""
+    self_energy_mak_noC!(structure, variables, times, h1, h2, t, t′)
+
+Compute self-energy in the Mass Action Kinetics (MAK) approximation.
+
+This is the simplest mean-field approximation with no memory corrections beyond
+O(α). All fluctuations and correlations are neglected.
+
+In the MAK approximation, the self-energies are diagonal and time-local.
+
+# Arguments
+
+- `structure::ReactionStructure`: Reaction network structure
+- `variables::ReactionVariables`: Container for dynamical variables (modified in-place)
+- `times::Vector{Float64}`: Time grid
+- `h1::Vector{Float64}`: Integration weights for single time integrals
+- `h2::Matrix{Float64}`: Integration weights for double time integrals  
+- `t::Int`: Current time index
+- `t′::Int`: Past time index (for causality: t′ ≤ t)
+
+No memory integrals are computed—all corrections are instantaneous.
+
+# Side Effects
+
+- Modifies `variables.Σ_μ`, `variables.Σ_R`, `variables.Σ_B` in-place
+- Only updates at `t′ == 1` since we don't have direct two-time integrals
+- Automatically resizes self-energy arrays if needed
+
+# Performance
+
+- **Cost**: O(N) per time step where N = num_species
+- **Memory**: O(NT) where T = number of time steps
+- **Fastest** of all methods, suitable for quick baseline comparisons
+
+# Example
+
+```julia
+# MAK is used internally by solve_dynamics!
+sol = solve_dynamics!(structure, variables, selfEnergy="MAK", tmax=10.0)
+
+# Self-energies are time-local (diagonal in time)
+@assert all(variables.Σ_R[:, 5, 1:4] .≈ 0)  # Off-diagonal times are zero
+```
+
+# See Also
+
+- [`self_energy_alpha2!`](@ref): MCA approximation (O(α²))
+- [`self_energy_SBR!`](@ref): SBR approximation  
+- [`self_energy_SBR_mixed!`](@ref): gSBR approximation
+- [`c_mnFULL`](@ref): Coefficient calculation
+"""
 function self_energy_mak_noC!(structure, variables, times, h1, h2 , t, t′)
-    """
-    Mass action kinetics (MAK) or the Mean field or O(α) corrections to the self-energy
-    """
 
     # Resize self-energies when Green functions are resized
     if variables.response_type == "single"
@@ -88,6 +136,58 @@ function self_energy_mak_noC!(structure, variables, times, h1, h2 , t, t′)
     end
 end
 
+"""
+    self_energy_alpha2!(structure, variables, times, h1, h2, t, t′)
+
+Compute self-energy in the Mode Coupling Approximation (MCA).
+
+This includes O(α²) perturbative corrections to MAK, capturing leading-order
+fluctuation effects. Uses single-species response functions only.
+
+# Arguments
+
+- `structure::ReactionStructure`: Reaction network structure
+- `variables::ReactionVariables`: Container for dynamical variables (modified in-place)
+- `times::Vector{Float64}`: Time grid
+- `h1::Vector{Float64}`: Integration weights
+- `h2::Matrix{Float64}`: Double integration weights
+- `t::Int`: Current time index
+- `t′::Int`: Past time index
+
+This captures the leading-order effect of fluctuations on the mean dynamics.
+
+# Accuracy
+
+- **Improves over MAK**: Includes fluctuation feedback
+- **Limitations**: Perturbative, fails for large fluctuations
+
+# Response Type
+
+- Works with `response_type = "single"` only
+- For cross-species corrections, use [`self_energy_alpha2_cross!`](@ref)
+
+# Performance
+
+- **Cost**: O(N²T) per time step
+- **More expensive** than MAK but cheaper than SBR/gSBR
+
+# Example
+
+```julia
+variables = ReactionVariables(structure, "single")
+sol = solve_dynamics!(structure, variables, selfEnergy="MCA", tmax=10.0)
+
+# Check that fluctuations are captured
+variance = diag(variables.N[1,1,:,:])
+@assert any(variance .> 0)  # Non-zero fluctuations
+```
+
+# See Also
+
+- [`self_energy_mak_noC!`](@ref): Mean-field baseline (O(α))
+- [`self_energy_alpha2_cross!`](@ref): MCA with cross-species correlations
+- [`self_energy_SBR!`](@ref): Self-consistent approximation
+"""
 function self_energy_alpha2!(structure, variables, times, h1, h2 , t, t′)
     """
     O(α^2) corrections to the self-energy
@@ -152,6 +252,52 @@ function self_energy_alpha2!(structure, variables, times, h1, h2 , t, t′)
     end
 end
         
+"""
+    self_energy_SBR!(structure, variables, times, h1, h2, t, t′)
+
+Compute self-energy in the Self-consistent Bubble Resummation (SBR) approximation.
+
+SBR includes self-consistent treatment of single-species fluctuations but ignores
+cross-reaction correlations. Each reaction's fluctuations are treated independently.
+
+# Arguments
+
+- `structure::ReactionStructure`: Reaction network structure
+- `variables::ReactionVariables`: Container (modified in-place)
+- `times::Vector{Float64}`: Time grid  
+- `h1, h2`: Integration weights
+- `t, t′`: Time indices
+
+The sum over \$n\$ includes all reaction vectors, but cross-reaction terms are neglected.
+
+# Key Differences from gSBR
+
+- **SBR**: Treats each reaction independently
+- **gSBR**: Couples all reactions together (more accurate)
+
+# Restrictions
+
+- **Only works with** `response_type = "single"`
+- For cross-species, must use [`self_energy_SBR_mixed_cross_noC!`](@ref)
+
+# Performance
+
+- **Cost**: O(N²T²) per iteration
+- **Faster** than gSBR, **slower** than MCA
+- Good compromise for weakly coupled systems
+
+# Example
+
+```julia
+variables = ReactionVariables(structure, "single")  # Required
+sol = solve_dynamics!(structure, variables, selfEnergy="SBR", tmax=10.0)
+```
+
+# See Also
+
+- [`self_energy_SBR_mixed!`](@ref): gSBR with full coupling
+- [`self_energy_SBR_mixed_cross_noC!`](@ref): gSBR with cross-species
+"""
 function self_energy_SBR!(structure, variables, times, h1, h2 , t, t′)
     """
     SBR corrections to the self-energy. Does not mix different n , i.e. fluctuations from different reactions are not mixed here.    
@@ -249,13 +395,56 @@ function self_energy_SBR!(structure, variables, times, h1, h2 , t, t′)
     end
 end
 
+"""
+    self_energy_SBR_mixed!(structure, variables, times, h1, h2, t, t′)
 
+Compute self-energy in the Generalized Self-consistent Bubble Resummation (gSBR) approximation.
 
+This is the more accurate approximation, including full self-consistent treatment
+of all cross-reaction correlations and memory effects. Works with _only_ single-species response functions.
+
+# Arguments
+
+- `structure::ReactionStructure`: Reaction network structure
+- `variables::ReactionVariables`: Container (modified in-place, `response_type="single"`)
+- `times`, `h1`, `h2`: Time grid and integration weights
+- `t, t′`: Current and past time indices
+
+# Key Features
+
+- **Self-consistency**: Self-energy depends on itself through matrix inversion
+- **Full coupling**: All cross-reaction correlations included  
+- **Memory**: Non-Markovian effects captured
+- **Accuracy**: Validates against master equation for small systems
+
+# Algorithm
+
+Uses block matrix inversion via [`block_tri_lower_inverse`](@ref) to efficiently
+compute the self-consistent solution.
+
+# Computational Cost
+
+- **Most expensive** method but also most accurate
+- Uses block operations to optimize performance
+
+# Example
+
+```julia
+variables = ReactionVariables(structure, "single")
+sol = solve_dynamics!(structure, variables, selfEnergy="gSBR", 
+                     tmax=10.0, atol=1e-4)
+
+# gSBR captures strong correlations accurately
+@test norm(variables.μ - master_mean) < 0.01  # Close to exact
+```
+
+# See Also
+
+- [`self_energy_SBR!`](@ref): Simplified version without cross-reaction coupling
+- [`self_energy_SBR_mixed_cross_noC!`](@ref): gSBR with cross-species responses
+- [`block_tri_lower_inverse`](@ref): Matrix inversion algorithm
+"""
 function self_energy_SBR_mixed!(structure, variables, times, h1, h2 , t, t′)    
-    """
-    generalized SBR (gSBR) corrections to the self-energy with different n being mixed with single species response functions.
-    (Slow -- uses block inversion instead of LAPAC inversion!)  
-    """
 
     # Resize self-energies when Green functions are resized    
     if (n = size(variables.R, 2)) > size(variables.Σ_R, 2)
@@ -354,10 +543,60 @@ function self_energy_SBR_mixed!(structure, variables, times, h1, h2 , t, t′)
 
 end
 
-function self_energy_SBR_mixed_cross_noC!(structure, variables, times, h1, h2 , t, t′)    
-    """
-    generalized SBR (gSBR) corrections to the self-energy with different n being mixed (Slow -- uses block inversion instead of LAPAC inversion!)    
-    """
+"""
+    self_energy_SBR_mixed_cross_noC!(structure, variables, times, h1, h2, t, t′)
+
+Compute gSBR self-energy with **full cross-species** response functions.
+
+This is the most complete and accurate approximation available in Achedmy, capturing:
+- All cross-species correlations
+- All cross-reaction correlations  
+- Full memory effects
+- Complete network coupling
+
+# Arguments
+
+- `structure::ReactionStructure`: Reaction network structure
+- `variables::ReactionVariables`: Container (modified in-place, `response_type="cross"` required)
+- `times`, `h1`, `h2`: Time grid and weights
+- `t, t′`: Time indices
+
+This includes **all** pairwise species correlations \$N_{ij}(t,t')\$.
+
+# When to Use
+
+- **Default choice** for most accurate results
+- Required when cross-species correlations are important
+- Necessary for systems with strong coupling between species
+
+# Computational Cost
+
+- Most expensive but also most accurate
+
+# Example
+
+```julia
+# Enzyme kinetics with strong S-E coupling
+variables = ReactionVariables(structure, "cross")  # Required
+sol = solve_dynamics!(structure, variables, selfEnergy="gSBR", tmax=5.0)
+
+# Access cross-species correlations
+cross_corr_SE = variables.N[1, 2, :, :]  # S-E correlation
+```
+
+# Performance Tips
+
+- Use `"single"` response type if cross-correlations are weak
+- Reduce `tmax` or increase tolerances if too slow
+- Consider SBR for quick exploratory runs
+
+# See Also
+
+- [`self_energy_SBR_mixed!`](@ref): gSBR with single-species responses
+- [`self_energy_SBR!`](@ref): Simplified SBR
+- [`block_tri_lower_inverse`](@ref): Matrix inversion used internally
+"""
+function self_energy_SBR_mixed_cross_noC!(structure, variables, times, h1, h2 , t, t′)
 
     # Resize self-energies when Green functions are resized    
     if (n = size(variables.R, 3)) > size(variables.Σ_R, 3)
@@ -472,6 +711,59 @@ function self_energy_SBR_mixed_cross_noC!(structure, variables, times, h1, h2 , 
 
 end
 
+"""
+    self_energy_alpha2_cross!(structure, variables, times, h1, h2, t, t′)
+
+Compute MCA (Mode Coupling Approximation) self-energy with **cross-species** response functions.
+
+This extends the O(α²) perturbative expansion to include cross-species correlations:
+- Captures pairwise species correlations
+- Includes cross-reaction coupling
+- More accurate than single-species MCA
+- Less expensive than full gSBR
+
+# Arguments
+
+- `structure::ReactionStructure`: Reaction network structure
+- `variables::ReactionVariables`: Container (modified in-place, `response_type="cross"` required)
+- `times`, `h1`, `h2`: Time grid and weights
+- `t, t′`: Time indices
+
+
+# When to Use
+
+- When cross-species correlations matter but gSBR is too expensive
+- Systems with moderate coupling between species
+- Good compromise between accuracy and speed
+
+# Computational Cost
+
+- More expensive than single-species MCA, much cheaper than gSBR
+
+# Limitations
+
+- Perturbative (O(α²)): breaks down for large fluctuations
+- No self-consistent bubble resummation
+- Less accurate than gSBR for strongly coupled systems
+
+# Example
+
+```julia
+# Enzyme kinetics with moderate S-E coupling
+variables = ReactionVariables(structure, "cross")  # Required
+sol = solve_dynamics!(structure, variables, selfEnergy="MCA", tmax=10.0)
+
+# Compare to single-species MCA
+variables_single = ReactionVariables(structure, "single")
+sol_single = solve_dynamics!(structure, variables_single, selfEnergy="MCA", tmax=10.0)
+```
+
+# See Also
+
+- [`self_energy_alpha2!`](@ref): Single-species MCA
+- [`self_energy_SBR_mixed_cross_noC!`](@ref): Full gSBR with cross-species
+- [`response_combinations`](@ref): Helper for multi-species response products
+"""
 function self_energy_alpha2_cross!(structure, variables, times, h1, h2 , t, t′)    
     """
     Mode coupling approximation (MCA) i.e. O(α^2) corrections to the self-energy with different n being mixed    

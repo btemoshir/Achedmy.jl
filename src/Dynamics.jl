@@ -1,3 +1,5 @@
+include("SelfEnergy.jl")
+
 """
     solve_dynamics!(structure, variables; kwargs...)
 
