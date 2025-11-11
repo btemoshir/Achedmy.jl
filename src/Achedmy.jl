@@ -57,7 +57,7 @@ via Plefka expansion. In preparation.
 
 # See Also
 
-- [GitHub Repository](https://github.com/yourusername/achedmy)
+- [GitHub Repository](https://github.com/btemoshir/achedmy)
 - [Catalyst.jl](https://docs.sciml.ai/Catalyst/stable/)
 - [KadanoffBaym.jl](https://nonequilibriumdynamics.github.io/KadanoffBaym.jl/)
 """
