@@ -23,6 +23,7 @@ __pycache__/
 
 # Julia
 Manifest.toml          # ← Add this for packages
+*Manifest.toml
 *.jl.*.cov
 *.jl.cov
 *.jl.mem

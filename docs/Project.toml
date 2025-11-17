@@ -1,6 +1,5 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
-Achedmy = "your-package-uuid-here"  # Replace with actual UUID from Project.toml
-
+Achedmy = "3809e951-761c-4e21-b9ed-bc66e666ef58"
 [compat]
 Documenter = "1"
