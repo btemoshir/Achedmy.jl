@@ -1,8 +1,5 @@
 #Define block multiplications, inversions etc with the fast elimination algorithm:
 
-using LinearAlgebra
-using Einsum
-
 """
     block_tri_lower_inverse_old(mat)
 
