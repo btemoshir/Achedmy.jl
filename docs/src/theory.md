@@ -4,7 +4,12 @@ This page explains the theoretical framework underlying Achedmy.jl, from the mas
 
 ## The Chemical Master Equation
 
-Chemical reaction networks with stochastic dynamics are governed by the **Master Equation**:
+ChemicaThese encode:
+1. **Reaction rates** ($k_\alpha$)
+2. **Stoichiometric structure** (binomial coefficients)
+3. **Mean-field densities** ($\mu^{\mathbf{r}-\mathbf{n}}$)
+
+See [`c_mnFULL`](https://github.com/btemoshir/Achedmy.jl/blob/main/src/Cmn.jl) for implementation details.tion networks with stochastic dynamics are governed by the **Master Equation**:
 
 ```math
 \\frac{\\partial P(\\mathbf{n}, t)}{\\partial t} = \\sum_{\\alpha} k_\\alpha \\left[ E_{-\\mathbf{s}_\\alpha + \\mathbf{r}_\\alpha} - 1 \\right] \\left( \\prod_i n_i^{r_i^\\alpha} \\right) P(\\mathbf{n}, t)
@@ -114,7 +119,7 @@ The **key challenge** is computing the self-energy \$\\Sigma\$. Achedmy implemen
 ```
 
 where:
-- \$c_{mn}^{(\\alpha\\beta)}\$ = combinatorial coefficients (see [`c_mnFULL`](@ref))
+- \$c_{mn}^{(\\alpha\\beta)}\$ = combinatorial coefficients (see [`c_mnFULL`](https://github.com/btemoshir/Achedmy.jl/blob/main/src/Cmn.jl))
 - Sum restricted to \$|m| + |n| < 3\$ (second-order)
 
 **Pros**:
@@ -161,7 +166,7 @@ where:
 ```
 
 where:
-- \$I + \\Sigma_R \\cdot R\$ = full operator to invert (via [`block_tri_lower_inverse`](@ref))
+- \$I + \\Sigma_R \\cdot R\$ = full operator to invert (via [`block_tri_lower_inverse`](https://github.com/btemoshir/Achedmy.jl/blob/main/src/BlockOp.jl))
 - All cross-species terms \$R_{ij}\$ included
 
 **Pros**:
@@ -198,7 +203,7 @@ These encode:
 2. **Stoichiometric structure** (binomial coefficients)
 3. **Mean-field densities** (\$\\mu^{\\mathbf{r}-\\mathbf{n}}\$)
 
-See [`c_mnFULL`](@ref) for implementation details.
+See [`c_mnFULL`](@https://github.com/btemoshir/Achedmy.jl/blob/main/src/Cmn.jl) for implementation details.
 
 ## Block Matrix Structure (gSBR)
 
@@ -212,7 +217,7 @@ where:
 - **Block dimension**: Different \$(m,n)\$ pairs
 - **Time dimension**: Lower-triangular causality structure
 
-This is computed efficiently using forward elimination (see [`block_tri_lower_inverse`](@ref)) rather than naive matrix inversion.
+This is computed efficiently using forward elimination (see [`block_tri_lower_inverse`](https://github.com/btemoshir/Achedmy.jl/blob/main/src/BlockOp.jl) rather than naive matrix inversion.
 
 ### Geometric Series Interpretation
 
@@ -273,6 +278,10 @@ For detailed derivations and benchmarks, see:
 
 ## See Also
 
-- [Getting Started](@ref) for practical usage
+- [Getting Started](tutorial.md) for practical usage
+- [Examples](examples.md) for applications to real systems
+- [API Reference](api.md) for implementation details
+
+<!-- - [Getting Started](@ref) for practical usage
 - [Examples](@ref) for applications to real systems
-- [API Reference](@ref) for implementation details
+- [API Reference](@ref) for implementation details -->

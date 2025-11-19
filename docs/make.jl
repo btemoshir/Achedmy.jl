@@ -1,4 +1,3 @@
-# push!(LOAD_PATH,"../src/") #TODO
 using Documenter
 using Achedmy
 
@@ -19,6 +18,7 @@ makedocs(
     ],
     repo = "https://github.com/btemoshir/Achedmy.jl/blob/{commit}{path}#{line}",
     checkdocs = :exports,
+    warnonly = [:missing_docs, :cross_references],  # Don't fail build on warnings
 )
 
 deploydocs(

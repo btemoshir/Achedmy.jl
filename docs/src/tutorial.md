@@ -196,9 +196,9 @@ heatmap(times, times, corr_MP,
 
 ## Next Steps
 
-- Read the [Theory](@ref) page to understand the mathematical framework
-- Explore [Examples](@ref) for complete worked examples
-- Check the [API Reference](@ref) for detailed function documentation
+- Read the [Theory](theory.md) page to understand the mathematical framework
+- Explore [Examples](examples.md) for complete worked examples
+- Check the [API Reference](api.md) for detailed function documentation
 
 ## Complete Example
 

@@ -444,5 +444,5 @@ plot(lags, C_S, marker=:circle, label="C_S(τ)",
 - Explore your own reaction networks
 - Tune parameters for your specific system
 - Compare methods to find the best speed/accuracy trade-off
-- Check out the [Theory](@ref) page for mathematical details
-- See the [API Reference](@ref) for all available functions
+- Check out the [Theory](theory.md) page for mathematical details
+- See the [API Reference](api.md) for all available functions
