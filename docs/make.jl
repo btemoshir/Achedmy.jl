@@ -6,7 +6,9 @@ makedocs(
     format = Documenter.HTML(
         prettyurls = get(ENV, "CI", nothing) == "true",
         canonical = "https://btemoshir.github.io/Achedmy.jl",
+        edit_link = "main",  # ← Add this line
         assets = String[],
+        repolink = "https://github.com/btemoshir/Achedmy.jl"
     ),
     modules = [Achedmy],
     pages = [

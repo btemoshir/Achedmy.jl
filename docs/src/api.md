@@ -4,6 +4,10 @@
 CurrentModule = Achedmy
 ```
 
+```@docs
+Achedmy
+```
+
 This page documents all public functions and types in Achedmy.jl.
 
 ## Main Types
@@ -19,14 +23,6 @@ Response
 ```@docs
 solve_dynamics!
 ```
-
-<!-- ## Internal Functions
-
-The following internal functions are documented in the source code but are not part of the public API:
-
-- **Self-Energy Functions**: `self_energy_mak_noC!`, `self_energy_alpha2!`, `self_energy_SBR!`, `self_energy_SBR_mixed!`, `self_energy_SBR_mixed_cross_noC!`, `self_energy_alpha2_cross!`
-- **Coefficient Functions**: `mnList`, `c_mn_no_mu`, `c_mn`, `c_mnFULL`, `c_mnFULL_test`, `create_c_mn_dict`
-- **Block Operations**: `block_tri_lower_inverse`, `block_mat_mul`, `block_mat_mix_mul`, `block_lower_shift`, `block_identity`, `block_vec_mat_mul_single_sp`, `response_combinations` -->
 
 ## Symmetry Types
 

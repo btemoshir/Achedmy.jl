@@ -6,13 +6,11 @@ on:
       - main
       - master
       - dev
-      - package
   pull_request:
     branches:
       - main
       - master
       - dev
-      - package
   workflow_dispatch:
 
 jobs:
