@@ -110,7 +110,7 @@ cross_corr_SP = vars_cross.N[1,4,:,:]            # ⟨δS(t)δP(t')⟩
 
 - [`ReactionStructure`](@ref)
 - [`solve_dynamics!`](@ref)
-- [`Response`](@ref), [`Correlation`](@ref): Symmetry types
+- [`Response`](@ref): Symmetry types
 """
 Base.@kwdef mutable struct ReactionVariables
 
