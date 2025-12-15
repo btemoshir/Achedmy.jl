@@ -63,7 +63,6 @@ via Plefka expansion. In preparation.
 """
 module Achedmy
 
-using KadanoffBaym
 using Catalyst
 using LinearAlgebra
 using BlockArrays
@@ -72,6 +71,9 @@ using Distributions
 using PyPlot
 using IterTools
 using Einsum
+using KadanoffBaym
+include("KadanoffBaym-1.2.1/KadanoffBaym.jl")
+using .KadanoffBaym
 
 include("Struct.jl")
 export ReactionStructure
