@@ -20,6 +20,35 @@ struct Correlation <: KadanoffBaym.AbstractSymmetry end
 @inline KadanoffBaym.symmetry(::Type{Correlation}) = nothing
 
 """
+Override setindex! for GreenFunction. 
+We import and extend the Base.setindex! method from KadanoffBaym to the old version of KadanoffBaym.jl (v1.2.1)!
+"""
+
+import Base: setindex!
+
+# Prevent single indexing for all types
+@inline Base.setindex!(::KadanoffBaym.GreenFunction, v, I) = error("Single indexing not allowed")
+
+# Define setindex! for ALL AbstractSymmetry types with generic Vararg
+Base.@propagate_inbounds function Base.setindex!(G::KadanoffBaym.GreenFunction{T,N,A,U}, v, I::Vararg{T1,N1}) where {T,N,A,U,T1,N1}
+    ts = KadanoffBaym.last2(I...)
+    jj = KadanoffBaym.front2(I...)
+
+    if ==(ts...)
+        G.data[ntuple(i -> Colon(), N-N1)..., jj..., ts...] = v
+    else
+        G.data[ntuple(i -> Colon(), N-N1)..., jj..., ts...] = v
+        # Apply symmetry operation based on the type U
+        G.data[ntuple(i -> Colon(), N-N1)..., jj..., reverse(ts)...] = KadanoffBaym.symmetry(U)(v)
+    end
+end
+
+# Specific method for OnePoint with 2 Int64 arguments (resolves ambiguity)
+Base.@propagate_inbounds function Base.setindex!(G::KadanoffBaym.GreenFunction{T,N,A,KadanoffBaym.OnePoint}, v, i1::Int64, i2::Int64) where {T,N,A}
+    G.data[ntuple(i -> Colon(), N-2)..., i1, i2] = v
+end
+
+"""
     ReactionVariables
 
 Storage container for all dynamical variables computed during the simulation.
