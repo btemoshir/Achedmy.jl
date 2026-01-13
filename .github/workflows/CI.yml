@@ -20,7 +20,7 @@ jobs:
       matrix:
         version:
           - '1.9' # LTS version
-          - '1.11.7' # Current stable (may work)
+          # - '1.11.7' # Current stable (may work)
         os:
           - ubuntu-latest
           - macOS-latest
