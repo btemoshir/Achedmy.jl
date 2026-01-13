@@ -20,9 +20,8 @@ jobs:
       matrix:
         version:
           - '1.9' # LTS version
-          # - '1.11.7' # Current stable (may work)
         os:
-          - ubuntu-latest
+          # - ubuntu-latest #Pyimport error with conda
           - macOS-latest
           - windows-latest
         arch:
@@ -65,7 +64,7 @@ jobs:
       
       - uses: julia-actions/setup-julia@v1
         with:
-          version: '1'
+          version: '1.9'
       
       - uses: julia-actions/cache@v1
       
