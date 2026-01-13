@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Examples · Achedmy.jl</title><meta name="title" content="Examples · Achedmy.jl"/><meta property="og:title" content="Examples · Achedmy.jl"/><meta property="twitter:title" content="Examples · Achedmy.jl"/><meta name="description" content="Documentation for Achedmy.jl."/><meta property="og:description" content="Documentation for Achedmy.jl."/><meta property="twitter:description" content="Documentation for Achedmy.jl."/><meta property="og:url" content="https://btemoshir.github.io/Achedmy.jl/examples/"/><meta property="twitter:url" content="https://btemoshir.github.io/Achedmy.jl/examples/"/><link rel="canonical" href="https://btemoshir.github.io/Achedmy.jl/examples/"/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.png" alt="Achedmy.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../">Achedmy.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><a class="tocitem" href="../tutorial/">Getting Started</a></li><li><a class="tocitem" href="../theory/">Theory</a></li><li class="is-active"><a class="tocitem" href>Examples</a><ul class="internal"><li><a class="tocitem" href="#Example-1:-Enzyme-Kinetics-(Michaelis-Menten)"><span>Example 1: Enzyme Kinetics (Michaelis-Menten)</span></a></li><li><a class="tocitem" href="#Example-2:-Gene-Regulation-(Toggle-Switch)"><span>Example 2: Gene Regulation (Toggle Switch)</span></a></li><li><a class="tocitem" href="#Example-3:-SIR-Infection-Dynamics"><span>Example 3: SIR Infection Dynamics</span></a></li><li><a class="tocitem" href="#Example-4:-Comparing-with-Gillespie-SSA"><span>Example 4: Comparing with Gillespie SSA</span></a></li><li><a class="tocitem" href="#Performance-Benchmarking"><span>Performance Benchmarking</span></a></li><li><a class="tocitem" href="#Tips-and-Tricks"><span>Tips and Tricks</span></a></li><li><a class="tocitem" href="#Next-Steps"><span>Next Steps</span></a></li></ul></li><li><a class="tocitem" href="../api/">API Reference</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Examples</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Examples</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/btemoshir/Achedmy.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/btemoshir/Achedmy.jl/blob/main/docs/src/examples.md#" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Examples"><a class="docs-heading-anchor" href="#Examples">Examples</a><a id="Examples-1"></a><a class="docs-heading-anchor-permalink" href="#Examples" title="Permalink"></a></h1><p>Complete worked examples demonstrating Achedmy.jl for different biological systems.</p><h2 id="Example-1:-Enzyme-Kinetics-(Michaelis-Menten)"><a class="docs-heading-anchor" href="#Example-1:-Enzyme-Kinetics-(Michaelis-Menten)">Example 1: Enzyme Kinetics (Michaelis-Menten)</a><a id="Example-1:-Enzyme-Kinetics-(Michaelis-Menten)-1"></a><a class="docs-heading-anchor-permalink" href="#Example-1:-Enzyme-Kinetics-(Michaelis-Menten)" title="Permalink"></a></h2><p>Classic enzyme-substrate dynamics with product formation.</p><h3 id="System-Definition"><a class="docs-heading-anchor" href="#System-Definition">System Definition</a><a id="System-Definition-1"></a><a class="docs-heading-anchor-permalink" href="#System-Definition" title="Permalink"></a></h3><pre><code class="language-julia hljs">using Catalyst, Achedmy, Plots
+
+# Michaelis-Menten mechanism
+rn_enzyme = @reaction_network begin
+    kf, S + E --&gt; SE    # Substrate + Enzyme → Complex
+    kr, SE --&gt; S + E    # Complex → Substrate + Enzyme (unbinding)
+    kcat, SE --&gt; P + E  # Complex → Product + Enzyme (catalysis)
+end
+
+# Parameters (typical enzyme kinetics)
+kf = 0.01      # Binding rate
+kr = 1.0       # Unbinding rate  
+kcat = 0.5     # Catalytic rate
+
+# Initial conditions
+S0 = 100       # Substrate molecules
+E0 = 10        # Enzyme molecules
+SE0 = 0        # Complex (initially zero)
+P0 = 0         # Product (initially zero)</code></pre><h3 id="Setup-and-Solve"><a class="docs-heading-anchor" href="#Setup-and-Solve">Setup and Solve</a><a id="Setup-and-Solve-1"></a><a class="docs-heading-anchor-permalink" href="#Setup-and-Solve" title="Permalink"></a></h3><pre><code class="language-julia hljs"># Create system structure
+structure = ReactionStructure(rn_enzyme, 
+    [:S =&gt; S0, :E =&gt; E0, :SE =&gt; SE0, :P =&gt; P0])
+
+# Initialize variables with cross-species responses
+# (Important for S-E-SE coupling!)
+variables = ReactionVariables(structure, &quot;cross&quot;)
+
+# Solve with gSBR
+sol = solve_dynamics!(structure, variables,
+    selfEnergy = &quot;gSBR&quot;,
+    tmax = 10.0,
+    abstol = 1e-6,
+    reltol = 1e-6
+)</code></pre><h3 id="Analyze-Results"><a class="docs-heading-anchor" href="#Analyze-Results">Analyze Results</a><a id="Analyze-Results-1"></a><a class="docs-heading-anchor-permalink" href="#Analyze-Results" title="Permalink"></a></h3><pre><code class="language-julia hljs">times = sol.t
+
+# Mean densities
+μ_S = variables.μ[1, :]   # Substrate
+μ_E = variables.μ[2, :]   # Enzyme  
+μ_SE = variables.μ[3, :]  # Complex
+μ_P = variables.μ[4, :]   # Product
+
+# Plot mean dynamics
+plot(times, μ_S, label=&quot;⟨S⟩&quot;, linewidth=2, xlabel=&quot;Time&quot;, ylabel=&quot;Count&quot;)
+plot!(times, μ_E, label=&quot;⟨E⟩&quot;, linewidth=2)
+plot!(times, μ_SE, label=&quot;⟨SE⟩&quot;, linewidth=2)
+plot!(times, μ_P, label=&quot;⟨P⟩&quot;, linewidth=2)
+title!(&quot;Enzyme Kinetics: Mean Dynamics&quot;)
+
+# Equal-time variances
+var_S = [variables.N[1,1,i,i] for i in 1:length(times)]
+var_SE = [variables.N[3,3,i,i] for i in 1:length(times)]
+
+plot(times, var_S, label=&quot;Var(S)&quot;, linewidth=2)
+plot!(times, var_SE, label=&quot;Var(SE)&quot;, linewidth=2)
+xlabel!(&quot;Time&quot;)
+ylabel!(&quot;Variance&quot;)
+title!(&quot;Fluctuations in Substrate and Complex&quot;)
+
+# Cross-correlation between S and E
+corr_SE = variables.N[1, 2, :, :]  # S-E correlation
+heatmap(times, times, corr_SE, 
+    xlabel=&quot;t′&quot;, ylabel=&quot;t&quot;, 
+    title=&quot;⟨ΔS(t) ΔE(t′)⟩&quot;,
+    color=:viridis)</code></pre><h3 id="Physical-Insights"><a class="docs-heading-anchor" href="#Physical-Insights">Physical Insights</a><a id="Physical-Insights-1"></a><a class="docs-heading-anchor-permalink" href="#Physical-Insights" title="Permalink"></a></h3><ol><li><strong>Mean behavior</strong>: Substrate decreases, product increases, complex reaches steady-state</li><li><strong>Fluctuations</strong>: Variance in SE larger than Poisson (σ² &gt; μ) due to binding bursts</li><li><strong>Correlations</strong>: S-E anticorrelated (enzyme binding removes substrate)</li></ol><h3 id="Comparison-of-Methods"><a class="docs-heading-anchor" href="#Comparison-of-Methods">Comparison of Methods</a><a id="Comparison-of-Methods-1"></a><a class="docs-heading-anchor-permalink" href="#Comparison-of-Methods" title="Permalink"></a></h3><pre><code class="language-julia hljs"># Compare different approximations
+methods = [&quot;MAK&quot;, &quot;MCA&quot;, &quot;SBR&quot;, &quot;gSBR&quot;]
+μ_P_methods = []
+
+for method in methods
+    vars = ReactionVariables(structure, &quot;single&quot;)
+    solve_dynamics!(structure, vars, selfEnergy=method, tmax=10.0)
+    push!(μ_P_methods, vars.μ[4, :])
+end
+
+# Plot comparison
+plot(times, μ_P_methods[1], label=&quot;MAK&quot;, linewidth=2)
+plot!(times, μ_P_methods[2], label=&quot;MCA&quot;, linewidth=2)
+plot!(times, μ_P_methods[3], label=&quot;SBR&quot;, linewidth=2)  
+plot!(times, μ_P_methods[4], label=&quot;gSBR&quot;, linewidth=2, linestyle=:dash)
+title!(&quot;Product Formation: Method Comparison&quot;)</code></pre><hr/><h2 id="Example-2:-Gene-Regulation-(Toggle-Switch)"><a class="docs-heading-anchor" href="#Example-2:-Gene-Regulation-(Toggle-Switch)">Example 2: Gene Regulation (Toggle Switch)</a><a id="Example-2:-Gene-Regulation-(Toggle-Switch)-1"></a><a class="docs-heading-anchor-permalink" href="#Example-2:-Gene-Regulation-(Toggle-Switch)" title="Permalink"></a></h2><p>Bistable genetic circuit with mutual repression.</p><h3 id="System-Definition-2"><a class="docs-heading-anchor" href="#System-Definition-2">System Definition</a><a class="docs-heading-anchor-permalink" href="#System-Definition-2" title="Permalink"></a></h3><pre><code class="language-julia hljs"># Mutual repression network
+rn_gene = @reaction_network begin
+    k1 / (1 + (P2/K)^n), ∅ --&gt; P1    # P1 production (repressed by P2)
+    k2 / (1 + (P1/K)^n), ∅ --&gt; P2    # P2 production (repressed by P1)
+    γ1, P1 --&gt; ∅                      # P1 degradation
+    γ2, P2 --&gt; ∅                      # P2 degradation
+end
+
+# Parameters (bistable regime)
+k1 = 10.0     # Max production rate P1
+k2 = 10.0     # Max production rate P2  
+K = 50.0      # Repression threshold
+n = 2.0       # Hill coefficient
+γ1 = 1.0      # Degradation rate P1
+γ2 = 1.0      # Degradation rate P2</code></pre><h3 id="Exploring-Bistability"><a class="docs-heading-anchor" href="#Exploring-Bistability">Exploring Bistability</a><a id="Exploring-Bistability-1"></a><a class="docs-heading-anchor-permalink" href="#Exploring-Bistability" title="Permalink"></a></h3><pre><code class="language-julia hljs"># Try two different initial conditions
+IC_high_P1 = [:P1 =&gt; 80, :P2 =&gt; 10]
+IC_high_P2 = [:P1 =&gt; 10, :P2 =&gt; 80]
+
+# Simulate both
+structure1 = ReactionStructure(rn_gene, IC_high_P1)
+variables1 = ReactionVariables(structure1, &quot;single&quot;)
+sol1 = solve_dynamics!(structure1, variables1, 
+    selfEnergy=&quot;SBR&quot;, tmax=20.0)
+
+structure2 = ReactionStructure(rn_gene, IC_high_P2)
+variables2 = ReactionVariables(structure2, &quot;single&quot;)
+sol2 = solve_dynamics!(structure2, variables2,
+    selfEnergy=&quot;SBR&quot;, tmax=20.0)
+
+# Plot phase portrait
+plot(variables1.μ[1,:], variables1.μ[2,:], 
+    label=&quot;IC: High P1&quot;, linewidth=2, 
+    xlabel=&quot;⟨P1⟩&quot;, ylabel=&quot;⟨P2⟩&quot;)
+plot!(variables2.μ[1,:], variables2.μ[2,:], 
+    label=&quot;IC: High P2&quot;, linewidth=2)
+scatter!([IC_high_P1[1][2]], [IC_high_P1[2][2]], 
+    label=&quot;Start 1&quot;, markersize=8)
+scatter!([IC_high_P2[1][2]], [IC_high_P2[2][2]], 
+    label=&quot;Start 2&quot;, markersize=8)
+title!(&quot;Toggle Switch: Bistable Dynamics&quot;)</code></pre><h3 id="Switching-Dynamics"><a class="docs-heading-anchor" href="#Switching-Dynamics">Switching Dynamics</a><a id="Switching-Dynamics-1"></a><a class="docs-heading-anchor-permalink" href="#Switching-Dynamics" title="Permalink"></a></h3><p>Study response to perturbations:</p><pre><code class="language-julia hljs"># Start in State 1 (high P1)
+structure = ReactionStructure(rn_gene, IC_high_P1)
+variables = ReactionVariables(structure, &quot;cross&quot;)
+
+# Solve to equilibrium
+sol = solve_dynamics!(structure, variables, 
+    selfEnergy=&quot;gSBR&quot;, tmax=30.0)
+
+# Response function shows how system reacts to perturbations
+R_P1_to_P2 = variables.R[1, 2, :, :]  # How P1(t) responds to δP2(t&#39;)
+
+heatmap(sol.t, sol.t, R_P1_to_P2,
+    xlabel=&quot;Perturbation time t′&quot;,
+    ylabel=&quot;Response time t&quot;,
+    title=&quot;R_{P1,P2}(t,t′): Cross-Response&quot;)</code></pre><hr/><h2 id="Example-3:-SIR-Infection-Dynamics"><a class="docs-heading-anchor" href="#Example-3:-SIR-Infection-Dynamics">Example 3: SIR Infection Dynamics</a><a id="Example-3:-SIR-Infection-Dynamics-1"></a><a class="docs-heading-anchor-permalink" href="#Example-3:-SIR-Infection-Dynamics" title="Permalink"></a></h2><p>Susceptible-Infected-Recovered epidemic model.</p><h3 id="System-Definition-3"><a class="docs-heading-anchor" href="#System-Definition-3">System Definition</a><a class="docs-heading-anchor-permalink" href="#System-Definition-3" title="Permalink"></a></h3><pre><code class="language-julia hljs"># SIR model with birth/death
+rn_sir = @reaction_network begin
+    β, S + I --&gt; 2I      # Infection
+    γ, I --&gt; R           # Recovery
+    μ, S --&gt; ∅           # Natural death (S)
+    μ, I --&gt; ∅           # Natural death (I)
+    μ, R --&gt; ∅           # Natural death (R)
+    μ*N_total, ∅ --&gt; S   # Birth (maintain population)
+end
+
+# Parameters (endemic regime)
+β = 0.001     # Infection rate
+γ = 0.1       # Recovery rate
+μ = 0.01      # Birth/death rate
+N_total = 1000  # Total population
+
+# Initial conditions (small outbreak)
+S0 = 990
+I0 = 10
+R0 = 0</code></pre><h3 id="Epidemic-Outbreak"><a class="docs-heading-anchor" href="#Epidemic-Outbreak">Epidemic Outbreak</a><a id="Epidemic-Outbreak-1"></a><a class="docs-heading-anchor-permalink" href="#Epidemic-Outbreak" title="Permalink"></a></h3><pre><code class="language-julia hljs">structure = ReactionStructure(rn_sir, [:S =&gt; S0, :I =&gt; I0, :R =&gt; R0])
+variables = ReactionVariables(structure, &quot;single&quot;)
+
+# Solve outbreak dynamics
+sol = solve_dynamics!(structure, variables,
+    selfEnergy = &quot;SBR&quot;,
+    tmax = 200.0,
+    dt = 0.5
+)
+
+times = sol.t
+μ_S = variables.μ[1, :]
+μ_I = variables.μ[2, :]
+μ_R = variables.μ[3, :]
+
+# Plot SIR curves
+plot(times, μ_S, label=&quot;Susceptible&quot;, linewidth=2, 
+    xlabel=&quot;Time (days)&quot;, ylabel=&quot;Population&quot;)
+plot!(times, μ_I, label=&quot;Infected&quot;, linewidth=2)
+plot!(times, μ_R, label=&quot;Recovered&quot;, linewidth=2)
+title!(&quot;SIR Epidemic Dynamics&quot;)
+
+# Find peak infection time
+peak_idx = argmax(μ_I)
+peak_time = times[peak_idx]
+peak_infected = μ_I[peak_idx]
+
+println(&quot;Peak infection: $(peak_infected) at time $(peak_time)&quot;)</code></pre><h3 id="Variance-and-Stochastic-Effects"><a class="docs-heading-anchor" href="#Variance-and-Stochastic-Effects">Variance and Stochastic Effects</a><a id="Variance-and-Stochastic-Effects-1"></a><a class="docs-heading-anchor-permalink" href="#Variance-and-Stochastic-Effects" title="Permalink"></a></h3><pre><code class="language-julia hljs"># Infection variance shows stochastic fluctuations
+var_I = [variables.N[2,2,i,i] for i in 1:length(times)]
+std_I = sqrt.(var_I)
+
+plot(times, μ_I, ribbon=std_I, fillalpha=0.3,
+    label=&quot;⟨I⟩ ± σ&quot;, linewidth=2,
+    xlabel=&quot;Time (days)&quot;, ylabel=&quot;Infected Count&quot;)
+title!(&quot;Infection Dynamics with Uncertainty&quot;)
+
+# Coefficient of variation
+CV_I = std_I ./ μ_I
+plot(times, CV_I, label=&quot;CV(I)&quot;, linewidth=2,
+    xlabel=&quot;Time (days)&quot;, ylabel=&quot;Coefficient of Variation&quot;)
+title!(&quot;Relative Fluctuations in Infected Population&quot;)</code></pre><h3 id="R-Estimation-from-Dynamics"><a class="docs-heading-anchor" href="#R-Estimation-from-Dynamics">R₀ Estimation from Dynamics</a><a id="R-Estimation-from-Dynamics-1"></a><a class="docs-heading-anchor-permalink" href="#R-Estimation-from-Dynamics" title="Permalink"></a></h3><pre><code class="language-julia hljs"># Basic reproduction number from early growth
+# dI/dt ≈ (β⟨S⟩/N - γ)⟨I⟩ at t→0
+
+early_idx = 1:10  # First 10 time points
+growth_rates = diff(log.(μ_I[early_idx])) ./ diff(times[early_idx])
+avg_growth = mean(growth_rates)
+
+R0_estimated = 1 + avg_growth / γ
+R0_theoretical = β * S0 / (γ * N_total)
+
+println(&quot;R₀ (theoretical): $(R0_theoretical)&quot;)
+println(&quot;R₀ (from dynamics): $(R0_estimated)&quot;)</code></pre><hr/><h2 id="Example-4:-Comparing-with-Gillespie-SSA"><a class="docs-heading-anchor" href="#Example-4:-Comparing-with-Gillespie-SSA">Example 4: Comparing with Gillespie SSA</a><a id="Example-4:-Comparing-with-Gillespie-SSA-1"></a><a class="docs-heading-anchor-permalink" href="#Example-4:-Comparing-with-Gillespie-SSA" title="Permalink"></a></h2><p>Validate Achedmy against exact stochastic simulations.</p><pre><code class="language-julia hljs">using JumpProcesses  # For Gillespie SSA
+
+# Simple birth-death process
+rn = @reaction_network begin
+    k_b, ∅ --&gt; X
+    k_d, X --&gt; ∅
+end
+
+k_b = 10.0
+k_d = 1.0
+X0 = 0
+
+# Gillespie simulation (many trajectories)
+function gillespie_mean_variance(rn, X0, tmax, n_trajectories=1000)
+    # ... (Gillespie implementation)
+    # Returns: times, mean_X, var_X
+end
+
+times_gillespie, μ_gillespie, var_gillespie = gillespie_mean_variance(rn, X0, 10.0)
+
+# Achedmy simulation
+structure = ReactionStructure(rn, [:X =&gt; X0])
+variables = ReactionVariables(structure, &quot;single&quot;)
+sol = solve_dynamics!(structure, variables, 
+    selfEnergy=&quot;MAK&quot;, tmax=10.0)  # MAK exact for linear systems
+
+# Compare
+plot(times_gillespie, μ_gillespie, label=&quot;Gillespie (1000 runs)&quot;, 
+    marker=:circle, linewidth=2)
+plot!(sol.t, variables.μ[1,:], label=&quot;Achedmy (MAK)&quot;, 
+    linewidth=2, linestyle=:dash)
+xlabel!(&quot;Time&quot;)
+ylabel!(&quot;⟨X⟩&quot;)
+title!(&quot;Birth-Death: Achedmy vs Gillespie&quot;)
+
+# Variance comparison
+var_achedmy = [variables.N[1,1,i,i] for i in 1:length(sol.t)]
+plot(times_gillespie, var_gillespie, label=&quot;Gillespie&quot;, 
+    marker=:circle, linewidth=2)
+plot!(sol.t, var_achedmy, label=&quot;Achedmy&quot;, 
+    linewidth=2, linestyle=:dash)
+xlabel!(&quot;Time&quot;)
+ylabel!(&quot;Var(X)&quot;)
+title!(&quot;Variance: Perfect Agreement&quot;)</code></pre><hr/><h2 id="Performance-Benchmarking"><a class="docs-heading-anchor" href="#Performance-Benchmarking">Performance Benchmarking</a><a id="Performance-Benchmarking-1"></a><a class="docs-heading-anchor-permalink" href="#Performance-Benchmarking" title="Permalink"></a></h2><pre><code class="language-julia hljs">using BenchmarkTools
+
+# Benchmark different methods on enzyme kinetics
+structure = ReactionStructure(rn_enzyme, [:S=&gt;100, :E=&gt;10, :SE=&gt;0, :P=&gt;0])
+
+for method in [&quot;MAK&quot;, &quot;MCA&quot;, &quot;SBR&quot;, &quot;gSBR&quot;]
+    variables = ReactionVariables(structure, 
+        method in [&quot;gSBR&quot;] ? &quot;cross&quot; : &quot;single&quot;)
+    
+    t_bench = @belapsed solve_dynamics!(\$structure, \$variables, 
+        selfEnergy=\$method, tmax=10.0)
+    
+    println(&quot;\$(method): \$(round(t_bench, digits=3))s&quot;)
+end
+
+# Typical output:
+# MAK: 0.021s
+# MCA: 0.145s  
+# SBR: 0.183s
+# gSBR: 1.247s</code></pre><hr/><h2 id="Tips-and-Tricks"><a class="docs-heading-anchor" href="#Tips-and-Tricks">Tips and Tricks</a><a id="Tips-and-Tricks-1"></a><a class="docs-heading-anchor-permalink" href="#Tips-and-Tricks" title="Permalink"></a></h2><h3 id="Speeding-Up-Large-Systems"><a class="docs-heading-anchor" href="#Speeding-Up-Large-Systems">Speeding Up Large Systems</a><a id="Speeding-Up-Large-Systems-1"></a><a class="docs-heading-anchor-permalink" href="#Speeding-Up-Large-Systems" title="Permalink"></a></h3><pre><code class="language-julia hljs"># For large networks, use:
+# 1. Coarser time grid
+sol = solve_dynamics!(structure, variables, dt=0.5)  # Instead of 0.1
+
+# 2. Relaxed tolerances  
+sol = solve_dynamics!(structure, variables, abstol=1e-4, reltol=1e-4)
+
+# 3. Faster methods
+sol = solve_dynamics!(structure, variables, selfEnergy=&quot;SBR&quot;)  # Instead of gSBR</code></pre><h3 id="Saving-and-Loading-Results"><a class="docs-heading-anchor" href="#Saving-and-Loading-Results">Saving and Loading Results</a><a id="Saving-and-Loading-Results-1"></a><a class="docs-heading-anchor-permalink" href="#Saving-and-Loading-Results" title="Permalink"></a></h3><pre><code class="language-julia hljs">using JLD2
+
+# Save results
+@save &quot;enzyme_results.jld2&quot; structure variables sol
+
+# Load later
+@load &quot;enzyme_results.jld2&quot; structure variables sol
+
+# Continue simulation from saved state
+sol_extended = solve_dynamics!(structure, variables,
+    selfEnergy=&quot;gSBR&quot;, tmax=20.0)  # Extends from previous tmax</code></pre><h3 id="Extracting-Specific-Quantities"><a class="docs-heading-anchor" href="#Extracting-Specific-Quantities">Extracting Specific Quantities</a><a id="Extracting-Specific-Quantities-1"></a><a class="docs-heading-anchor-permalink" href="#Extracting-Specific-Quantities" title="Permalink"></a></h3><pre><code class="language-julia hljs"># Autocorrelation function for species i
+function autocorr(variables, species_idx)
+    N_ii = variables.N[species_idx, species_idx, :, :]
+    μ_i = variables.μ[species_idx, :]
+    
+    # Normalized: C(t,t&#39;) = ⟨ΔX(t)ΔX(t&#39;)⟩ / σ(t)σ(t&#39;)
+    σ_t = sqrt.(diag(N_ii))
+    C = N_ii ./ (σ_t * σ_t&#39;)
+    
+    return C
+end
+
+# Lag correlation: C(τ) where τ = t - t&#39;
+function lag_correlation(variables, species_idx)
+    C = autocorr(variables, species_idx)
+    n = size(C, 1)
+    
+    # Extract τ=0, τ=1, τ=2, ... diagonals
+    lags = 0:(n-1)
+    C_lag = [mean(diag(C, k)) for k in lags]
+    
+    return lags, C_lag
+end
+
+# Usage
+lags, C_S = lag_correlation(variables, 1)  # Substrate autocorrelation
+plot(lags, C_S, marker=:circle, label=&quot;C_S(τ)&quot;, 
+    xlabel=&quot;Lag τ&quot;, ylabel=&quot;Correlation&quot;)</code></pre><h2 id="Next-Steps"><a class="docs-heading-anchor" href="#Next-Steps">Next Steps</a><a id="Next-Steps-1"></a><a class="docs-heading-anchor-permalink" href="#Next-Steps" title="Permalink"></a></h2><ul><li>Explore your own reaction networks</li><li>Tune parameters for your specific system</li><li>Compare methods to find the best speed/accuracy trade-off</li><li>Check out the <a href="../theory/">Theory</a> page for mathematical details</li><li>See the <a href="../api/">API Reference</a> for all available functions</li></ul></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../theory/">« Theory</a><a class="docs-footer-nextpage" href="../api/">API Reference »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Tuesday 13 January 2026 17:52">Tuesday 13 January 2026</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
