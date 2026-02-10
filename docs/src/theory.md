@@ -1,278 +1,387 @@
 # Mathematical Theory
 
-This page explains the theoretical framework underlying Achedmy.jl, from the master equation to the various approximation schemes.
+This page summarizes the theory implemented in `Achedmy.jl` using the notation of the accompanying manuscript. It includes the chemical reaction network definition, the path-integral formulation, effective fields from (extended) Plefka expansion, and the mean/response/correlation update equations solved numerically in the package.
 
-## The Chemical Master Equation
+## 1. Chemical reaction networks and the stochastic dynamics
 
-Reaction networks with stochastic dynamics are governed by the **Master Equation**:
-
-```math
-\frac{\partial P(\mathbf{n}, t)}{\partial t} = \sum_{\alpha} k_\alpha \left[ E_{-\mathbf{s}_\alpha + \mathbf{r}_\alpha} - 1 \right] \left( \prod_i n_i^{r_i^\alpha} \right) P(\mathbf{n}, t)
-```
-
-where:
-- $P(\mathbf{n}, t)$ = probability of state $\mathbf{n}$ at time $t$
-- $k_\alpha$ = rate of reaction $\alpha$
-- $\mathbf{s}_\alpha$ = product stoichiometry
-- $\mathbf{r}_\alpha$ = reactant stoichiometry
-- $E_{\mathbf{m}}$ = step operator: $E_{\mathbf{m}} f(\mathbf{n}) = f(\mathbf{n} + \mathbf{m})$
-
-### The Challenge
-
-Solving the Master Equation exactly requires tracking $\mathcal{O}(N^M)$ states (N = typical copy number, M = species). This becomes intractable for even modest systems.
-
-## The Plefka Expansion
-
-Achedmy uses the **Plefka expansion** (TAP approximation) to derive closed equations for:
-
-1. **Mean densities**: $\mu_i(t) = \langle n_i(t) \rangle$
-2. **Response functions**: $R_{ij}(t,t') = \frac{\delta \mu_i(t)}{\delta h_j(t')}$
-3. **Correlation functions**: $N_{ij}(t,t') = \langle \Delta n_i(t) \Delta n_j(t') \rangle$
-
-where $\Delta n_i = n_i - \mu_i$.
-
-### Effective Action
-
-The Plefka expansion starts from the effective action:
+We consider `P` species with copy-number state
 
 ```math
-S[\mu, R] = -\log Z[h] - \int dt \sum_i h_i(t) \mu_i(t) + \frac{1}{2} \int dt dt' \sum_{ij} h_i(t) R_{ij}(t,t') h_j(t')
+\mathbf{n}(\tau) = (n_1(\tau),\ldots,n_P(\tau)).
 ```
 
-Extremizing this action gives **memory-corrected** equations of motion.
-
-## Equations of Motion
-
-### Response Function Equation
-
-The response function satisfies a Kadanoff-Baym equation:
+A general reaction `\beta` is
 
 ```math
-\left[ \frac{\partial}{\partial t} \delta_{ij} - A_{ij}(t) \right] R_{jk}(t,t') = \delta_{ik} \delta(t-t') + \int_{t'}^t dt'' \, \Sigma_R^{ij}(t,t'') R_{jk}(t'',t')
+\sum_{i=1}^{P} r_i^\beta X_i \xrightarrow{k_\beta(\tau)} \sum_{i=1}^{P} s_i^\beta X_i,
 ```
 
-where:
-- $A_{ij}(t)$ = Jacobian of mean-field dynamics
-- $\Sigma_R^{ij}(t,t'')$ = **self-energy** (memory kernel)
-
-### Correlation Function Equation
-
-Similarly for correlations:
+with reactant stoichiometry `r_i^\beta`, product stoichiometry `s_i^\beta`, and stoichiometric matrix entries
 
 ```math
-N_{ij}(t,t') = \int_{t_0}^{\min(t,t')} dt'' \, R_{ik}(t,t'') \Sigma_B^{kl}(t'',t'') R_{lj}(t',t'')
+S_{i\beta}=s_i^\beta-r_i^\beta.
 ```
 
-where:
-- $\Sigma_B^{kl}(t,t)$ = Born self-energy (noise kernel)
-
-### Mean Density Equation
-
-The mean evolves with a memory term:
+For well-mixed dynamics, the microscopic propensity is
 
 ```math
-\frac{d\mu_i(t)}{dt} = \sum_\alpha k_\alpha (s_i^\alpha - r_i^\alpha) \mu^{\mathbf{r}_\alpha}(t) + \int_{t_0}^t dt' \, \Sigma_\mu^i(t,t')
+f_\beta(\mathbf{n},\tau)=k_\beta(\tau)\prod_i\frac{n_i!}{(n_i-r_i^\beta)!}.
 ```
 
-where:
-- $\Sigma_\mu^i(t,t')$ = mean-field correction from fluctuations
+The probability mass function `P(\mathbf{n},\tau)` obeys the chemical master equation (CME):
 
-## The Self-Energy: Different Approximations
+```math
+\frac{\partial P(\mathbf{n},\tau)}{\partial \tau}
+=\sum_\beta f_\beta(\mathbf{n}-\mathbf{s}^\beta+\mathbf{r}^\beta,\tau)P(\mathbf{n}-\mathbf{s}^\beta+\mathbf{r}^\beta,\tau)
+-\sum_\beta f_\beta(\mathbf{n},\tau)P(\mathbf{n},\tau).
+```
 
-The **key challenge** is computing the self-energy $\Sigma$. Achedmy implements four approximation schemes:
+In the deterministic large-copy-number limit, this reduces to mass-action kinetics (MAK):
 
-### 1. MAK (Mean-field Approximation with Kinetics)
+```math
+\partial_\tau \mathbf{x}=\mathbf{S}\,\mathbf{f}^{\mathrm{MAK}},
+\qquad
+f_\beta^{\mathrm{MAK}}(\mathbf{x})=j_\beta\prod_i x_i^{r_i^\beta}.
+```
 
-**Assumption**: Neglect all memory effects ($\Sigma \approx 0$).
+Achedmy targets regimes where MAK is inaccurate because intrinsic fluctuations are large.
 
-**Equations**:
+## 2. Doi-Peliti path integral
+
+The CME can be mapped to a Doi-Peliti field theory with fields `\phi_i(\tau)` and conjugate fields `\tilde\phi_i(\tau)`. The Doi-shifted Hamiltonian is
+
+```math
+H[\tilde\phi,\phi]
+=\sum_\beta k_\beta(\tau_-)
+\left[\prod_i(1+\tilde\phi_i(\tau))^{s_i^\beta}-\prod_i(1+\tilde\phi_i(\tau))^{r_i^\beta}\right]
+\prod_i\phi_i(\tau_-)^{r_i^\beta}.
+```
+
+The generating functional is
+
+```math
+\mathcal Z(\tilde\theta,\theta)=\int\mathcal D\tilde\phi\,\mathcal D\phi\;e^{S[\tilde\phi,\phi]},
+```
+
+with action
+
 ```math
 \begin{aligned}
-\Sigma_R^{ij}(t,t') &= 0 \\
-\Sigma_\mu^i(t,t') &= 0 \\
-\Sigma_B^{ij}(t,t) &= \sum_\alpha k_\alpha (s_i^\alpha + r_i^\alpha) \mu^{\mathbf{r}_\alpha}(t)
+S[\tilde\phi,\phi]
+&=\int_0^t d\tau\,H[\tilde\phi(\tau),\phi(\tau_-)]
++\sum_i\Bigg(n_{0i}\tilde\phi_i(0)-\phi_i(0)\tilde\phi_i(0) \\
+&\quad+\int_0^t d\tau\big[-\tilde\phi_i\partial_\tau\phi_i+\tilde\theta_i\tilde\phi_i+\theta_i\phi_i\big]\Bigg).
 \end{aligned}
 ```
 
-**Pros**: 
-- Fastest (no memory integrals)
-- Simple analytic structure
+### Observables and two-time functions
 
-**Cons**:
-- Inaccurate for systems with strong fluctuations
-- No memory effects
-
-**When to use**: Quick estimates, mean-field dominated systems
-
-### 2. MCA (Mode Coupling Approximation)
-
-**Assumption**: Perturbative expansion to $\mathcal{O}(\alpha^2)$ in the "vertex" parameter $\alpha$.
-
-**Self-energy**:
-```math
-\Sigma_R^{ij}(t,t') = \sum_{\alpha,\beta} \sum_{m,n} c_{mn}^{(\alpha\beta)}(t) \prod_k R_{kk}(t,t')^{m_k+n_k}
-```
-
-where:
-- $c_{mn}^{(\alpha\beta)}$ = combinatorial coefficients (see `c_mnFULL` in [Cmn.jl](https://github.com/btemoshir/Achedmy.jl/blob/main/src/Cmn.jl))
-- Sum restricted to $|m| + |n| < 3$ (second-order)
-
-**Pros**:
-- Captures leading-order memory effects
-- Moderate computational cost
-
-**Cons**:
-- Perturbative (fails for large $\alpha$)
-- No self-consistent resummation
-
-**When to use**: Weak to moderate fluctuations
-
-### 3. SBR (Single-species Bubble Resummation)
-
-**Assumption**: Resum geometric series of "bubble" diagrams for **each species independently**.
-
-**Self-energy**:
-```math
-\Sigma_R^{ii}(t,t') = \sum_{m,n} c_{mn,i}(t) \left[ \frac{1}{1 - \chi_i} \right] R_{ii}(t,t')^{m_i+n_i}
-```
-
-where:
-- $\chi_i = c_{mn,i} R_{ii}^{m_i+n_i}$ (bubble series for species $i$)
-- $\frac{1}{1-\chi_i}$ = geometric series: $1 + \chi_i + \chi_i^2 + \cdots$
-
-**Pros**:
-- Self-consistent (not perturbative)
-- Captures multi-order memory effects
-- Moderate cost (no matrix inversion)
-
-**Cons**:
-- Neglects cross-species correlations
-- Less accurate than gSBR for coupled systems
-
-**When to use**: Single-species dominant, moderate coupling
-
-### 4. gSBR (Generalized SBR)
-
-**Assumption**: Resum bubble series with **full cross-species** coupling.
-
-**Self-energy**:
-```math
-\Sigma_R^{ij}(t,t') = \sum_{m,n} c_{mn}^{(\alpha\beta)}(t) \left[ (I + \Sigma_R \cdot R)^{-1} \right]_{ij} R_{ik}(t,t')^{m_k} R_{jl}(t,t')^{n_l}
-```
-
-where:
-- $I + \Sigma_R \cdot R$ = full operator to invert (via `block_tri_lower_inverse` in [BlockOp.jl](https://github.com/btemoshir/Achedmy.jl/blob/main/src/BlockOp.jl))
-- All cross-species terms $R_{ij}$ included
-
-**Pros**:
-- **Most accurate** approximation
-- Captures cross-species correlations
-- Self-consistent resummation
-
-**Cons**:
-- Most expensive ($\mathcal{O}(N^4 T^3)$)
-- Requires block matrix inversion
-
-**When to use**: Strong coupling, cross-species correlations important
-
-## Comparison of Methods
-
-| Feature | MAK | MCA | SBR | gSBR |
-|---------|-----|-----|-----|------|
-| **Complexity** | $\mathcal{O}(N T)$ | $\mathcal{O}(N T^2)$ | $\mathcal{O}(N T^2)$ | $\mathcal{O}(N^4 T^3)$ |
-| **Memory effects** | ✗ | ✓ (pert.) | ✓ (self-cons.) | ✓ (self-cons.) |
-| **Cross-species** | ✗ | ✗ | ✗ | ✓ |
-| **Self-consistent** | N/A | ✗ | ✓ | ✓ |
-| **Accuracy** | ⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ |
-
-## The Coefficient Functions
-
-A key component is the coefficient $c_{mn}^\alpha(t)$:
+The key order parameters are:
 
 ```math
-c_{mn}^\alpha(t) = k_\alpha \left[ \prod_i \binom{s_i^\alpha}{m_i} - \prod_i \binom{r_i^\alpha}{m_i} \right] \prod_i \binom{r_i^\alpha}{n_i} \mu^{\mathbf{r}_\alpha - \mathbf{n}}(t)
+\mu_i(\tau)=\langle\phi_i(\tau)\rangle=\langle n_i(\tau)\rangle,
+\qquad
+\tilde\mu_i(\tau)=\langle\tilde\phi_i(\tau)\rangle=0,
 ```
-
-These encode:
-1. **Reaction rates** ($k_\alpha$)
-2. **Stoichiometric structure** (binomial coefficients)
-3. **Mean-field densities** ($\mu^{\mathbf{r}-\mathbf{n}}$)
-
-See `c_mnFULL` in [Cmn.jl](https://github.com/btemoshir/Achedmy.jl/blob/main/src/Cmn.jl) for implementation details.
-
-## Block Matrix Structure (gSBR)
-
-The gSBR self-energy requires inverting a **block lower-triangular** matrix:
 
 ```math
-\Xi = \left[ I - \chi \right]^{-1}
+R_{ij}(\tau,\tau')=\langle\delta\phi_i(\tau)\,\delta\tilde\phi_j(\tau')\rangle,
+\qquad
+C_{ij}(\tau,\tau')=\langle\delta\phi_i(\tau)\,\delta\phi_j(\tau')\rangle.
 ```
 
-where:
-- **Block dimension**: Different $(m,n)$ pairs
-- **Time dimension**: Lower-triangular causality structure
-
-This is computed efficiently using forward elimination (see `block_tri_lower_inverse` in [BlockOp.jl](https://github.com/btemoshir/Achedmy.jl/blob/main/src/BlockOp.jl)) rather than naive matrix inversion.
-
-### Geometric Series Interpretation
-
-The inversion implements the geometric series:
+The physical number correlator is
 
 ```math
-\Xi = I + \chi + \chi^2 + \chi^3 + \cdots
+N_{ij}(\tau,\tau')\equiv\langle\delta n_i(\tau)\delta n_j(\tau')\rangle.
 ```
 
-Each term represents higher-order bubble contributions:
-- $I$: Mean-field
-- $\chi$: Single bubble
-- $\chi^2$: Two bubbles
-- ...
+For Gaussian closure (used by the Plefka-reduced dynamics),
 
-## Time Integration: Adaptive Kadanoff-Baym
+```math
+N_{ij}(\tau,\tau')=C_{ij}(\tau,\tau')+R_{ij}(\tau,\tau')\mu_j(\tau')\quad(\tau'<\tau).
+```
 
-Achedmy uses the **KadanoffBaym.jl** package for adaptive time-stepping:
+with equal-time identities
 
-1. **Initial step**: Coarse grid with user-specified $dt$
-2. **Error estimation**: Local truncation error from ODE solver
-3. **Refinement**: Add points where error exceeds tolerance
-4. **Two-time propagation**: Extend both $t$ and $t'$ axes
+```math
+N_{ij}(\tau,\tau)=C_{ij}(\tau,\tau)\ (i\neq j),
+\qquad
+N_{ii}(\tau,\tau)=\mu_i(\tau)+C_{ii}(\tau,\tau).
+```
 
-This ensures accuracy while minimizing computational cost.
+## 3. Dynamical Plefka free energy and linear effective fields
 
-## Comparison to Other Methods
+We split the Hamiltonian as
 
-### vs. Gillespie SSA
+```math
+H_\alpha = H_0 + \alpha H_{\mathrm{int}},
+```
 
-| Aspect | Gillespie | Achedmy |
-|--------|-----------|---------|
-| **Speed** (two-time) | ⚠️ Very slow | ✓ Fast |
-| **Accuracy** | ✓ Exact | ≈ Excellent |
-| **Memory** | Low | Moderate-High |
-| **Scalability** | Poor | Good |
+where `H_0` is a quadratic baseline and `H_{\mathrm{int}}` contains higher-order reactions.
 
-**Conclusion**: Achedmy is 10-1000× faster for two-time correlations, with comparable accuracy.
+The effective action (Plefka free energy) is the Legendre transform
 
-### vs. Linear Noise Approximation (LNA)
+```math
+\Gamma(\tilde\mu,\mu)=\operatorname*{extr}_{\tilde\theta,\theta}
+\left\{
+\log\int\mathcal D\tilde\phi\,\mathcal D\phi\,
+\exp\left[S_\alpha-\sum_i\int d\tau\left(\tilde\mu_i\tilde\theta_i+\mu_i\theta_i\right)\right]
+\right\}.
+```
 
-| Aspect | LNA | Achedmy |
-|--------|-----|---------|
-| **Regime** | Near deterministic | All regimes |
-| **Accuracy** | Good (large N) | Good (all N) |
-| **Memory effects** | ✗ | ✓ |
-| **Two-time** | Limited | Full |
+Conjugate fields follow from
 
-**Conclusion**: Achedmy extends beyond LNA's Gaussian regime and includes memory effects.
+```math
+\theta_{i,\alpha}(\tau)=-\frac{\delta\Gamma}{\delta\mu_i(\tau)},
+\qquad
+\tilde\theta_{i,\alpha}(\tau)=-\frac{\delta\Gamma}{\delta\tilde\mu_i(\tau)}.
+```
 
-## Further Reading
+Physical dynamics corresponds to zero external fields:
 
-For detailed derivations and benchmarks, see:
+```math
+\frac{\delta\Gamma}{\delta\mu_i(\tau)}=0,
+\qquad
+\frac{\delta\Gamma}{\delta\tilde\mu_i(\tau)}=0.
+```
 
-1. **Plefka Expansion**: Plefka (1982), Georges & Yedidia (1991)
-2. **Chemical Reaction Networks**: Van Kampen (2007)
-3. **Kadanoff-Baym Equations**: Kadanoff & Baym (1962), Balzer et al. (2013)
+### Plefka expansion and effective fields
 
-## See Also
+We expand
 
-- [Getting Started](tutorial.md) for practical usage
-- [Examples](examples.md) for applications to real systems
-- [API Reference](api.md) for implementation details
+```math
+\Gamma_\alpha=\Gamma^0+\alpha\Gamma^1+\frac{\alpha^2}{2}\Gamma^2+\cdots,
+```
+
+and similarly for fields. The effective fields are
+
+```math
+\tilde\theta_i^{\mathrm{eff}}=-\alpha\tilde\theta_i^1-\frac{\alpha^2}{2}\tilde\theta_i^2+\cdots,
+\qquad
+\theta_i^{\mathrm{eff}}=-\alpha\theta_i^1-\frac{\alpha^2}{2}\theta_i^2+\cdots.
+```
+
+The mean update equations under the Gaussian effective action are
+
+```math
+\partial_\tau\mu_i(\tau)=k_{1i}-k_{2i}\mu_i(\tau)+\tilde\theta_i^{\mathrm{eff}}(\tau),
+```
+
+```math
+-\partial_\tau\tilde\mu_i(\tau)=-k_{2i}\tilde\mu_i(\tau)+\theta_i^{\mathrm{eff}}(\tau),
+```
+
+with the physical Doi-shifted solution `\tilde\mu_i\equiv 0` and `\theta_i^{\mathrm{eff}}\equiv 0`.
+
+### Stoichiometric coefficient tensor
+
+A convenient representation of `H_{\mathrm{int}}` is
+
+```math
+H_{\mathrm{int}}(\tau)=\sum_{\bar m,\bar n}c_{\bar m,\bar n}(\tau)
+\prod_i\delta\tilde\phi_i(\tau)^{m_i}\,\delta\phi_i(\tau_-)^{n_i},
+```
+
+with
+
+```math
+\begin{aligned}
+c_{\bar m,\bar n}(\tau)
+&=\sum_\beta k_\beta(\tau_-)
+\left[\prod_i\binom{s_i^\beta}{m_i}(1+\tilde\mu_i)^{s_i^\beta-m_i}
+-\prod_i\binom{r_i^\beta}{m_i}(1+\tilde\mu_i)^{r_i^\beta-m_i}
+\right] \\
+&\qquad\times\prod_i\binom{r_i^\beta}{n_i}\mu_i(\tau_-)^{r_i^\beta-n_i}.
+\end{aligned}
+```
+
+At the physical solution (`\tilde\mu=0`), this simplifies to the expression implemented in `src/Cmn.jl`:
+
+```math
+c_{\bar m,\bar n}(\tau)=\sum_\beta k_\beta(\tau_-)
+\left[\prod_i\binom{s_i^\beta}{m_i}-\prod_i\binom{r_i^\beta}{m_i}\right]
+\prod_i\binom{r_i^\beta}{n_i}\mu_i(\tau_-)^{r_i^\beta-n_i}.
+```
+
+First-order Plefka gives
+
+```math
+-\tilde\theta_i^1(\tau)=c_{\bar e_i,\bar 0}(\tau),
+\qquad
+-\theta_i^1(\tau)=c_{\bar 0,\bar e_i}(\tau_+)=0,
+```
+
+which recovers MAK for interacting reactions:
+
+```math
+\partial_\tau\mu_i(\tau)=k_{1i}-k_{2i}\mu_i(\tau)+\sum_\beta k_\beta(\tau)(s_i^\beta-r_i^\beta)\prod_j\mu_j(\tau)^{r_j^\beta}.
+```
+
+Second order introduces explicit memory terms in `\tilde\theta_i^2` through past responses.
+
+## 4. Extended Plefka free energy (means + two-time order parameters)
+
+To go beyond linear order parameters, extended Plefka constrains
+
+```math
+Q=\{R,B,C\}=
+\{\delta\phi\,\delta\tilde\phi,\ \delta\tilde\phi\,\delta\tilde\phi,\ \delta\phi\,\delta\phi\}
+```
+
+via conjugate fields
+
+```math
+\hat Q=\{\hat R,\hat B,\hat C\}.
+```
+
+The augmented action is
+
+```math
+\begin{aligned}
+S^Q &= S
++\sum_{ij}\int d\tau\,d\tau'\Big[
+\hat R_{ij}(\tau,\tau')\,\delta\tilde\phi_j(\tau)\delta\phi_i(\tau') \\
+&\qquad\qquad\qquad+\tfrac12\hat B_{ij}(\tau,\tau')\,\delta\tilde\phi_i(\tau)\delta\tilde\phi_j(\tau')
++\tfrac12\hat C_{ij}(\tau,\tau')\,\delta\phi_i(\tau)\delta\phi_j(\tau')
+\Big].
+\end{aligned}
+```
+
+The extended free energy is
+
+```math
+G(\tilde\mu,\mu,Q)=\Gamma(\tilde\mu,\mu)
+-\sum_{ij}\int d\tau\,d\tau'\left[
+\hat R_{ij}R_{ji}+\tfrac12\hat B_{ij}B_{ij}+\tfrac12\hat C_{ij}C_{ij}
+\right],
+```
+
+and the effective quadratic fields are expanded as
+
+```math
+\hat Q^{\mathrm{eff}}=-\alpha\hat Q^1-\frac{\alpha^2}{2}\hat Q^2+\cdots.
+```
+
+### Kadanoff-Baym update equations
+
+With the effective Gaussian action, the coupled updates are:
+
+```math
+\partial_\tau\mu_i(\tau)=k_{1i}-k_{2i}\mu_i(\tau)+\tilde\theta_i^{\mathrm{eff}}(\tau),
+```
+
+```math
+(\partial_\tau+k_{2i})R_{ij}(\tau,\tau')=
+\delta_{ij}\delta(\tau-\tau')+
+\int_{\tau'}^{\tau}d\tau''\sum_k \hat R^{\mathrm{eff}}_{ik}(\tau,\tau'')R_{kj}(\tau'',\tau'),
+```
+
+```math
+\begin{aligned}
+(\partial_\tau+k_{2i})C_{ij}(\tau,\tau')
+&=\int_0^\tau d\tau''\sum_k \hat R^{\mathrm{eff}}_{ik}(\tau,\tau'')C_{kj}(\tau'',\tau') \\
+&\quad+\int_0^\tau d\tau''\sum_k \hat B^{\mathrm{eff}}_{ik}(\tau,\tau'')R_{jk}(\tau',\tau'').
+\end{aligned}
+```
+
+A numerically convenient non-differential form used in Achedmy is
+
+```math
+\mathbf C=(\Delta t)^2\,\mathbf R\,\mathbf{\hat B}^{\mathrm{eff}}\,\mathbf R^{\mathsf T}.
+```
+
+## 5. Effective fields used by MAK, MCA, SBR, and gSBR
+
+### First-order extended fields
+
+For at-most-binary reactions, first-order fields are
+
+```math
+-\tilde\theta_i^1(\tau)=c_{\bar e_i,\bar 0}(\tau)+\sum_{k\le l}c_{\bar e_i,\bar e_k+\bar e_l}(\tau)C_{kl}(\tau_-,\tau_-),
+```
+
+```math
+-\hat R^1_{ij}(\tau,\tau')=\frac{\delta_{\tau',\tau_-}}{\Delta t}\,c_{\bar e_i,\bar e_j}(\tau),
+```
+
+```math
+-\frac12\hat B^1_{ij}(\tau,\tau')=
+\frac{\delta_{\tau',\tau}}{2\Delta t}
+\left[c_{\bar e_i+\bar e_j,\bar 0}(\tau)+\sum_{k\le l}c_{\bar e_i+\bar e_j,\bar e_k+\bar e_l}(\tau)C_{kl}(\tau_-,\tau_-)
+\right],
+```
+
+with `\hat C^1=0`.
+
+### MCA (`O(\alpha^2)`) kernel
+
+The second-order response kernel is
+
+```math
+-\hat R^2_{ij}(\tau,\tau')=
+2\sum_{\bar n,\bar m\in\mathbb S}
+ c_{\bar e_i,\bar n}(\tau)c_{\bar m,\bar e_j}(\tau'_+)
+\Lambda^{\bar n,\bar m}(\tau_-,\tau'_+),
+```
+
+where `\Lambda^{\bar n,\bar m}` is the sum of all Wick pairings built from response functions.
+
+### gSBR resummation
+
+gSBR replaces the truncated `O(\alpha^2)` kernel by an infinite bubble-chain resummation. In continuous time,
+
+```math
+\begin{aligned}
+-\hat R^{2,\mathrm{gSBR}}_{ij}(\tau,\tau')
+&=2\sum_{\bar n,\bar m,\bar n',\bar m'\in\mathbb S}
+ c_{\bar e_i,\bar n}(\tau)
+\int_0^\tau d\tau'' \\
+&\times\left(\delta_{\bar n,\bar m}\delta(\tau-\tau'')-\Lambda^{\bar n,\bar m}(\tau,\tau'')c_{\bar m,\bar n'}(\tau'')\right)^{-1}
+\Lambda^{\bar n',\bar m'}(\tau'',\tau')c_{\bar m',\bar e_j}(\tau').
+\end{aligned}
+```
+
+The effective memory kernel used in the response equation is
+
+```math
+\hat R^{\mathrm{eff}}=-\hat R^1-\frac12\hat R^{2,\mathrm{gSBR}}.
+```
+
+In the implementation, this inverse is computed as a causal block lower-triangular solve (`src/BlockOp.jl`), which stabilizes dynamics at large reaction rates.
+
+## 6. Numerical update equations in Achedmy.jl
+
+Achedmy solves the coupled mean/response dynamics with adaptive two-time Kadanoff-Baym integration (`KadanoffBaym.jl`). On a nonuniform time grid (`h_1` quadrature weights), updates are:
+
+```math
+\dot\mu_i(t)=k_{1i}-k_{2i}\mu_i(t)+\int_0^t d\tau\,\Sigma_\mu^i(t,\tau),
+```
+
+```math
+\partial_t R_{ij}(t,t')=-k_{2i}R_{ij}(t,t')+\delta_{ij}\delta(t-t')+
+\int_{t'}^t d\tau\sum_k\Sigma_R^{ik}(t,\tau)R_{kj}(\tau,t'),
+```
+
+```math
+\mathbf C\approx\mathbf R\,(\mathbf\Sigma_B\odot \mathbf W)\,\mathbf R^{\mathsf T},
+\qquad
+N_{ij}(t,t')=C_{ij}(t,t')+\mu_j(t')R_{ij}(t,t').
+```
+
+Here `\Sigma_\mu`, `\Sigma_R`, and `\Sigma_B` are computed from `c_{\bar m,\bar n}` using one of four closures:
+
+- `MAK`: first-order local terms only.
+- `MCA`: second-order (`O(\alpha^2)`) truncation.
+- `SBR`: single-species self-consistent bubble resummation.
+- `gSBR`: full cross-species and cross-reaction bubble resummation.
+
+## 7. Practical scope and limits
+
+The formulation is designed for Markovian jump processes with polynomial propensities, especially CRNs with at-most-binary reactions where gSBR has the strongest empirical performance. It gives accurate means and two-time functions in regimes where MAK/LNA fail, while avoiding direct solution of the full CME state space.
+
+For worked examples and API usage, see:
+
+- `docs/src/tutorial.md`
+- `docs/src/examples.md`
+- `docs/src/api.md`

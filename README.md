@@ -53,18 +53,19 @@ A Julia package implementing **memory-corrected dynamics** for chemical reaction
 ## Table of Contents
 
 1. [Overview](#overview)
-2. [Features](#features)
-3. [Installation](#installation)
-4. [Quick Start](#quick-start)
-5. [Usage Guide](#usage-guide)
-6. [Approximation Methods](#approximation-methods)
-7. [Examples](#examples)
-8. [Package Structure](#package-structure)
-9. [Dependencies](#dependencies)
-10. [Advanced Usage](#advanced-usage)
-11. [Testing](#testing)
-12. [Citation](#citation)
-13. [License](#license)
+2. [Theory (Short)](#theory-short)
+3. [Features](#features)
+4. [Installation](#installation)
+5. [Quick Start](#quick-start)
+6. [Usage Guide](#usage-guide)
+7. [Approximation Methods](#approximation-methods)
+8. [Examples](#examples)
+9. [Package Structure](#package-structure)
+10. [Dependencies](#dependencies)
+11. [Advanced Usage](#advanced-usage)
+12. [Testing](#testing)
+13. [Citation](#citation)
+14. [License](#license)
 
 ---
 
@@ -84,6 +85,96 @@ The CRNs are defined using [`Catalyst.jl`](https://docs.sciml.ai/Catalyst/stable
 - **Associated self-energies** $\Sigma_{ij}(t,t')$ encoding memory effects
 
 All quantities are computed with [adaptive two-time solvers](https://nonequilibriumdynamics.github.io/KadanoffBaym.jl/stable/) for efficiency and accuracy. This ensures that the we can simulate multiple orders of magnitude in time scales without excessive computational cost.
+
+---
+
+## Theory (Short)
+
+This section gives a compact summary of the formalism implemented in Achedmy. A full derivation is in [`docs/src/theory.md`](docs/src/theory.md).
+
+### Chemical Reaction Network and CME
+
+For `P` species with copy numbers `\mathbf{n}=(n_1,\dots,n_P)`, each reaction `\beta` is
+
+```math
+\sum_{i=1}^P r_i^\beta X_i \xrightarrow{k_\beta(\tau)} \sum_{i=1}^P s_i^\beta X_i.
+```
+
+The propensity is
+
+```math
+f_\beta(\mathbf{n},\tau)=k_\beta(\tau)\prod_i\frac{n_i!}{(n_i-r_i^\beta)!},
+```
+
+and the chemical master equation (CME) is
+
+```math
+\frac{\partial P(\mathbf{n},\tau)}{\partial \tau}
+=\sum_\beta f_\beta(\mathbf{n}-\mathbf{s}^\beta+\mathbf{r}^\beta,\tau)P(\mathbf{n}-\mathbf{s}^\beta+\mathbf{r}^\beta,\tau)
+-\sum_\beta f_\beta(\mathbf{n},\tau)P(\mathbf{n},\tau).
+```
+
+### Path Integral and Order Parameters
+
+Using Doi-Peliti fields `\phi_i,\tilde\phi_i`, the Doi-shifted Hamiltonian is
+
+```math
+H=\sum_\beta k_\beta(\tau_-)\left[\prod_i(1+\tilde\phi_i)^{s_i^\beta}-\prod_i(1+\tilde\phi_i)^{r_i^\beta}\right]\prod_i\phi_i^{r_i^\beta}.
+```
+
+The generating functional is
+
+```math
+\mathcal Z(\tilde\theta,\theta)=\int\mathcal D\tilde\phi\,\mathcal D\phi\,e^{S[\tilde\phi,\phi]}.
+```
+
+The primary observables are
+
+```math
+\mu_i(\tau)=\langle\phi_i(\tau)\rangle=\langle n_i(\tau)\rangle,\quad
+R_{ij}(\tau,\tau')=\langle\delta\phi_i(\tau)\delta\tilde\phi_j(\tau')\rangle,\quad
+C_{ij}(\tau,\tau')=\langle\delta\phi_i(\tau)\delta\phi_j(\tau')\rangle.
+```
+
+The number correlation reported by the package is
+
+```math
+N_{ij}(t,t')=C_{ij}(t,t')+\mu_j(t')R_{ij}(t,t').
+```
+
+### Effective Fields and Update Equations
+
+Plefka expansion splits the Hamiltonian as `H_\alpha=H_0+\alpha H_{\mathrm{int}}` and introduces effective fields:
+
+```math
+\tilde\theta_i^{\mathrm{eff}}=-\alpha\tilde\theta_i^1-\frac{\alpha^2}{2}\tilde\theta_i^2+\cdots,\qquad
+\theta_i^{\mathrm{eff}}=-\alpha\theta_i^1-\frac{\alpha^2}{2}\theta_i^2+\cdots.
+```
+
+The coupled equations solved by Achedmy are
+
+```math
+\partial_\tau\mu_i(\tau)=k_{1i}-k_{2i}\mu_i(\tau)+\tilde\theta_i^{\mathrm{eff}}(\tau),
+```
+
+```math
+(\partial_\tau+k_{2i})R_{ij}(\tau,\tau')
+=\delta_{ij}\delta(\tau-\tau')+\int_{\tau'}^\tau d\tau''\sum_k \hat R^{\mathrm{eff}}_{ik}(\tau,\tau'')R_{kj}(\tau'',\tau'),
+```
+
+```math
+\mathbf C=(\Delta t)^2\,\mathbf R\,\mathbf{\hat B}^{\mathrm{eff}}\,\mathbf R^{\mathsf T}.
+```
+
+The reaction-network coefficients used throughout are
+
+```math
+c_{\bar m,\bar n}(\tau)=\sum_\beta k_\beta(\tau_-)
+\left[\prod_i\binom{s_i^\beta}{m_i}-\prod_i\binom{r_i^\beta}{m_i}\right]
+\prod_i\binom{r_i^\beta}{n_i}\mu_i(\tau_-)^{r_i^\beta-n_i}.
+```
+
+In gSBR, the response kernel is `\hat R^{\mathrm{eff}}=-\hat R^1-\frac{1}{2}\hat R^{2,\mathrm{gSBR}}`, where `\hat R^{2,\mathrm{gSBR}}` is obtained by causal block lower-triangular resummation (`src/BlockOp.jl`, `src/SelfEnergy.jl`).
 
 ---
 
