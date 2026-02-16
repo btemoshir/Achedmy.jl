@@ -41,7 +41,7 @@ TODO: Implement proper handling of initial correlation $C_{ij}(0,0)$ values! -->
 [![CI](https://github.com/btemoshir/Achedmy.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/btemoshir/Achedmy.jl/actions/workflows/CI.yml) 
 <!-- [![codecov](https://codecov.io/gh/btemoshir/Achedmy.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/btemoshir/Achedmy.jl) -->
 
-A Julia package implementing **memory-corrected dynamics** for chemical reaction networks (CRNs) with discrete molecular number fluctuations. Achedmy captures the effects of intrinsic noise that become significant in the regime of small molecule numbers or large fluctuations, going beyond standard mean-field approximations.
+A Julia package implementing **memory-corrected dynamics** for chemical reaction networks (CRNs) with discrete molecular number fluctuations. Achedmy captures the effects of intrinsic noise that become significant in the regime of small molecule numbers or large fluctuations, going far beyond standard mean-field approximations.
 
 **Author:** Moshir Harsh  
 **Email:** btemoshir@gmail.com  
@@ -94,7 +94,7 @@ This section gives a compact summary of the formalism implemented in Achedmy. A 
 
 ### Chemical Reaction Network and CME
 
-For `P` species with copy numbers `\mathbf{n}=(n_1,\dots,n_P)`, each reaction `\beta` is
+For $P$ species with copy numbers $ \mathbf{n}=(n_1,\dots,n_P) $, each reaction $\beta$, the reaction network is defined by the stoichiometric coefficients $r_i^\beta$ and $s_i^\beta$ for reactants and products, and the time-dependent rate $k_\beta(\tau)$:
 
 ```math
 \sum_{i=1}^P r_i^\beta X_i \xrightarrow{k_\beta(\tau)} \sum_{i=1}^P s_i^\beta X_i.
@@ -116,7 +116,7 @@ and the chemical master equation (CME) is
 
 ### Path Integral and Order Parameters
 
-Using Doi-Peliti fields `\phi_i,\tilde\phi_i`, the Doi-shifted Hamiltonian is
+Using Doi-Peliti fields $\phi_i,\tilde\phi_i$, the Doi-shifted Hamiltonian is
 
 ```math
 H=\sum_\beta k_\beta(\tau_-)\left[\prod_i(1+\tilde\phi_i)^{s_i^\beta}-\prod_i(1+\tilde\phi_i)^{r_i^\beta}\right]\prod_i\phi_i^{r_i^\beta}.
@@ -131,25 +131,30 @@ The generating functional is
 The primary observables are
 
 ```math
-\mu_i(\tau)=\langle\phi_i(\tau)\rangle=\langle n_i(\tau)\rangle,\quad
-R_{ij}(\tau,\tau')=\langle\delta\phi_i(\tau)\delta\tilde\phi_j(\tau')\rangle,\quad
-C_{ij}(\tau,\tau')=\langle\delta\phi_i(\tau)\delta\phi_j(\tau')\rangle.
+\text{Mean copy numbers}, \quad \mu_i(\tau)=\langle\phi_i(\tau)\rangle=\langle n_i(\tau)\rangle,\quad \\
+\text{Response functions}, \quad R_{ij}(\tau,\tau')=\langle\delta\phi_i(\tau)\delta\tilde\phi_j(\tau')\rangle,\quad \\
+\text{Correlation functions}, \quad C_{ij}(\tau,\tau')=\langle\delta\phi_i(\tau)\delta\phi_j(\tau')\rangle.\\
+\text{Number correlations}, \quad N_{ij}(\tau,\tau')=\langle\delta n_i(\tau)\delta n_j(\tau')\rangle \approx C_{ij}(\tau,\tau')+\mu_j(\tau')R_{ij}(\tau,\tau') .
+
 ```
 
-The number correlation reported by the package is
+### Effective Fields
+
+Plefka expansion splits the Hamiltonian as $ H_\alpha=H_0+\alpha H_{\mathrm{int}} $ and introduces effective fields:
 
 ```math
-N_{ij}(t,t')=C_{ij}(t,t')+\mu_j(t')R_{ij}(t,t').
+\tilde\theta_i^{\mathrm{eff}}=-\alpha\tilde\theta_i^1-\frac{\alpha^2}{2}\tilde\theta_i^2+\cdots.
 ```
-
-### Effective Fields and Update Equations
-
-Plefka expansion splits the Hamiltonian as `H_\alpha=H_0+\alpha H_{\mathrm{int}}` and introduces effective fields:
 
 ```math
-\tilde\theta_i^{\mathrm{eff}}=-\alpha\tilde\theta_i^1-\frac{\alpha^2}{2}\tilde\theta_i^2+\cdots,\qquad
-\theta_i^{\mathrm{eff}}=-\alpha\theta_i^1-\frac{\alpha^2}{2}\theta_i^2+\cdots.
+\hat R^{\mathrm{eff}}=-\alpha\hat R^1-\frac{\alpha^2}{2}\hat R^{2}+\cdots,\qquad
+\hat B^{\mathrm{eff}}=-\alpha\hat B^1-\frac{\alpha^2}{2}\hat B^{2}+\cdots.
 ```
+**Achedmy calculates the effective fields $ \tilde\theta_i^{\mathrm{eff}}, \hat R^{\mathrm{eff}}, \hat B^{\mathrm{eff}} $ at different levels of approximations. The fields depend on the reraction rates $k_\beta$, the stoichiometric coefficients $r_i^\beta, s_i^\beta$ and are given self-consistently in terms of the mean and two-time functions $\mu_i(\tau), R_{ij}(\tau,\tau'), C_{ij}(\tau,\tau')$ which involve memory integrals over the past history of the dynamics.**
+
+Achedmy implements the solution at all approximation levels for arbitrary CRNs with polynomial propensities and upto binary reactions. The approximations are briefly summarized in [Approximation Methods](#approximation-methods) and detailed in the source code, documentation and the manuscript.
+
+### Update Equations
 
 The coupled equations solved by Achedmy are
 
@@ -166,7 +171,9 @@ The coupled equations solved by Achedmy are
 \mathbf C=(\Delta t)^2\,\mathbf R\,\mathbf{\hat B}^{\mathrm{eff}}\,\mathbf R^{\mathsf T}.
 ```
 
-The reaction-network coefficients used throughout are
+
+
+<!-- The reaction-network coefficients used throughout are
 
 ```math
 c_{\bar m,\bar n}(\tau)=\sum_\beta k_\beta(\tau_-)
@@ -174,7 +181,7 @@ c_{\bar m,\bar n}(\tau)=\sum_\beta k_\beta(\tau_-)
 \prod_i\binom{r_i^\beta}{n_i}\mu_i(\tau_-)^{r_i^\beta-n_i}.
 ```
 
-In gSBR, the response kernel is `\hat R^{\mathrm{eff}}=-\hat R^1-\frac{1}{2}\hat R^{2,\mathrm{gSBR}}`, where `\hat R^{2,\mathrm{gSBR}}` is obtained by causal block lower-triangular resummation (`src/BlockOp.jl`, `src/SelfEnergy.jl`).
+In gSBR, the response kernel is $ \hat R^{\mathrm{eff}}=-\hat R^1-\frac{1}{2}\hat R^{2,\mathrm{gSBR}} $, where $ \hat R^{2,\mathrm{gSBR}} $ is obtained by causal block lower-triangular resummation (`src/BlockOp.jl`, `src/SelfEnergy.jl`). -->
 
 ---
 
@@ -194,7 +201,7 @@ In gSBR, the response kernel is `\hat R^{\mathrm{eff}}=-\hat R^1-\frac{1}{2}\hat
 
 ### Prerequisites
 
-- Julia 1.6 or later
+- Julia 1.9 or later
 - Git (for cloning the repository)
 
 ### Install from Source
@@ -355,24 +362,25 @@ Achedmy implements four approximation schemes of increasing accuracy:
 - **Cost:** Lowest
 
 ### 2. MCA (Mode Coupling Approximation)
-- **Description:** Includes correlations via mode coupling
-- **Use case:** Intermediate systems
+- **Description:** Includes correlations via mode coupling terms
+- **Use case:** Intermediate systems and very weak coupling regime (small binary reaction rates compared to first order rates)
 - **Accuracy:** Better than MAK, but limited
 - **Cost:** Moderate
 
 ### 3. SBR (Self-consistent Bubble Resummation)
-- **Description:** Self-consistent treatment of single-species bubbles
-- **Use case:** Systems where cross-correlations are weak
-- **Accuracy:** Good for weakly coupled species
+- **Description:** Self-consistent treatment of bubble terms in the response kernel, but reactions are treated independently and cross-species responses are directly neglected
+- **Use case:** Systems where fluctuations from different reactions as well as cross-species responses are weak
+- **Accuracy:** Good for weakly coupled reactions
 - **Cost:** Moderate-High
 
-### 4. gSBR (Generalized SBR) ⭐ **Recommended**
-- **Description:** Full self-consistent treatment with cross-correlations
-- **Use case:** General chemical reaction networks
+### 4. gSBR (Generalized SBR) **Recommended**
+- **Description:** Full self-consistent treatment with cross reactions and cross-species correlations and responses
+- **Use case:** General chemical reaction networks with strong coupling and significant fluctuations
+- **Options**: "single" (only diagonal self-energies) or "cross" (full self-energies with cross-reactions)
 - **Accuracy:** Best available, validated against master equation
-- **Cost:** Highest (but worth it!)
+- **Cost:** Highest
 
-**Rule of thumb:** Always start with gSBR unless computational cost is prohibitive.
+**Recommendation:** Start with gSBR unless computational cost is prohibitive, especially for systems with strong couplings or small molecule numbers.
 
 ---
 
@@ -576,7 +584,7 @@ The test suite covers:
 ### Continuous Integration
 
 The package uses GitHub Actions for automated testing:
-- **CI.yml**: Tests on Julia 1.6, 1.9, and latest across Linux, macOS, Windows
+- **CI.yml**: Tests on Julia 1.9, and latest across macOS and Windows
 - **CompatHelper.yml**: Automatically updates dependency compatibility
 - **TagBot.yml**: Automatic version tagging
 
@@ -603,7 +611,7 @@ end
 
 ### Memory Issues with Large Systems
 
-For systems with many species (>10) or long times:
+For systems with many species (>5-10) or long times:
 - Use `"single"` response type instead of `"cross"`
 - Increase `atol` and `rtol` tolerances
 - Reduce time range or increase `dt_min`

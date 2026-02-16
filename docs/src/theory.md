@@ -4,19 +4,19 @@ This page summarizes the theory implemented in `Achedmy.jl` using the notation o
 
 ## 1. Chemical reaction networks and the stochastic dynamics
 
-We consider `P` species with copy-number state
+We consider (molecular) species $X_i$ with $i=1,2,\ldots,P$ with the respective copy-number vector, 
 
 ```math
 \mathbf{n}(\tau) = (n_1(\tau),\ldots,n_P(\tau)).
 ```
 
-A general reaction `\beta` is
+A general ssytem of reactions indexed by $\beta$ is defined as,
 
 ```math
 \sum_{i=1}^{P} r_i^\beta X_i \xrightarrow{k_\beta(\tau)} \sum_{i=1}^{P} s_i^\beta X_i,
 ```
 
-with reactant stoichiometry `r_i^\beta`, product stoichiometry `s_i^\beta`, and stoichiometric matrix entries
+with reactant stoichiometry $r_i^\beta$, product stoichiometry $s_i^\beta$, and stoichiometric matrix entries
 
 ```math
 S_{i\beta}=s_i^\beta-r_i^\beta.
@@ -28,7 +28,7 @@ For well-mixed dynamics, the microscopic propensity is
 f_\beta(\mathbf{n},\tau)=k_\beta(\tau)\prod_i\frac{n_i!}{(n_i-r_i^\beta)!}.
 ```
 
-The probability mass function `P(\mathbf{n},\tau)` obeys the chemical master equation (CME):
+The probability mass function $P(\mathbf{n},\tau)$ obeys the chemical master equation (CME) which describes the time evolution of the probability distribution over copy numbers,
 
 ```math
 \frac{\partial P(\mathbf{n},\tau)}{\partial \tau}
@@ -36,7 +36,7 @@ The probability mass function `P(\mathbf{n},\tau)` obeys the chemical master equ
 -\sum_\beta f_\beta(\mathbf{n},\tau)P(\mathbf{n},\tau).
 ```
 
-In the deterministic large-copy-number limit, this reduces to mass-action kinetics (MAK):
+In the deterministic large-copy-number limit where fluctuations can be ignored, this reduces to the mean-field mass-action kinetics (MAK):
 
 ```math
 \partial_\tau \mathbf{x}=\mathbf{S}\,\mathbf{f}^{\mathrm{MAK}},
@@ -44,11 +44,11 @@ In the deterministic large-copy-number limit, this reduces to mass-action kineti
 f_\beta^{\mathrm{MAK}}(\mathbf{x})=j_\beta\prod_i x_i^{r_i^\beta}.
 ```
 
-Achedmy targets regimes where MAK is inaccurate because intrinsic fluctuations are large.
+**Achedmy targets regimes where MAK is inaccurate because intrinsic fluctuations are large.**
 
 ## 2. Doi-Peliti path integral
 
-The CME can be mapped to a Doi-Peliti field theory with fields `\phi_i(\tau)` and conjugate fields `\tilde\phi_i(\tau)`. The Doi-shifted Hamiltonian is
+The CME can be mapped to a Doi-Peliti field theory with fields $\phi_i(\tau)$ and conjugate fields $\tilde\phi_i(\tau)$. The Doi-shifted Hamiltonian is
 
 ```math
 H[\tilde\phi,\phi]
@@ -118,7 +118,7 @@ We split the Hamiltonian as
 H_\alpha = H_0 + \alpha H_{\mathrm{int}},
 ```
 
-where `H_0` is a quadratic baseline and `H_{\mathrm{int}}` contains higher-order reactions.
+where $H_0$ is a quadratic baseline and $H_{\mathrm{int}}$ contains higher-order reactions.
 
 The effective action (Plefka free energy) is the Legendre transform
 
@@ -172,11 +172,11 @@ The mean update equations under the Gaussian effective action are
 -\partial_\tau\tilde\mu_i(\tau)=-k_{2i}\tilde\mu_i(\tau)+\theta_i^{\mathrm{eff}}(\tau),
 ```
 
-with the physical Doi-shifted solution `\tilde\mu_i\equiv 0` and `\theta_i^{\mathrm{eff}}\equiv 0`.
+with the physical Doi-shifted solution $\tilde\mu_i\equiv 0$ and $\theta_i^{\mathrm{eff}}\equiv 0$.
 
 ### Stoichiometric coefficient tensor
 
-A convenient representation of `H_{\mathrm{int}}` is
+A convenient representation of $H_{\mathrm{int}}$ is
 
 ```math
 H_{\mathrm{int}}(\tau)=\sum_{\bar m,\bar n}c_{\bar m,\bar n}(\tau)
@@ -196,7 +196,7 @@ c_{\bar m,\bar n}(\tau)
 \end{aligned}
 ```
 
-At the physical solution (`\tilde\mu=0`), this simplifies to the expression implemented in `src/Cmn.jl`:
+At the physical solution ($\tilde\mu=0$), this simplifies to the expression implemented in `src/Cmn.jl`:
 
 ```math
 c_{\bar m,\bar n}(\tau)=\sum_\beta k_\beta(\tau_-)
@@ -218,7 +218,7 @@ which recovers MAK for interacting reactions:
 \partial_\tau\mu_i(\tau)=k_{1i}-k_{2i}\mu_i(\tau)+\sum_\beta k_\beta(\tau)(s_i^\beta-r_i^\beta)\prod_j\mu_j(\tau)^{r_j^\beta}.
 ```
 
-Second order introduces explicit memory terms in `\tilde\theta_i^2` through past responses.
+Second order introduces explicit memory terms in $ \tilde\theta_i^2 $ through past responses.
 
 ## 4. Extended Plefka free energy (means + two-time order parameters)
 
@@ -312,9 +312,9 @@ For at-most-binary reactions, first-order fields are
 \right],
 ```
 
-with `\hat C^1=0`.
+with $\hat C^1=0$.
 
-### MCA (`O(\alpha^2)`) kernel
+### MCA ($O(\alpha^2)$) kernel
 
 The second-order response kernel is
 
@@ -325,11 +325,11 @@ The second-order response kernel is
 \Lambda^{\bar n,\bar m}(\tau_-,\tau'_+),
 ```
 
-where `\Lambda^{\bar n,\bar m}` is the sum of all Wick pairings built from response functions.
+where $\Lambda^{\bar n,\bar m}$ is the sum of all Wick pairings built from response functions.
 
 ### gSBR resummation
 
-gSBR replaces the truncated `O(\alpha^2)` kernel by an infinite bubble-chain resummation. In continuous time,
+gSBR replaces the truncated $ O(\alpha^2) $ kernel by an infinite bubble-chain resummation. In continuous time,
 
 ```math
 \begin{aligned}
@@ -350,38 +350,49 @@ The effective memory kernel used in the response equation is
 
 In the implementation, this inverse is computed as a causal block lower-triangular solve (`src/BlockOp.jl`), which stabilizes dynamics at large reaction rates.
 
+### SBR resummation
+This version differs from the gSBR version in the kernel expression of the $ \hat R^2 $ field. Instead of the summation in the extended space of reaction vectors and time indices, we consider the sum over the different reactions separately which makes it more efficient for large systems with many reactions but ignores fluctuations arrising from cross-reaction correlations.
+
 ## 6. Numerical update equations in Achedmy.jl
 
-Achedmy solves the coupled mean/response dynamics with adaptive two-time Kadanoff-Baym integration (`KadanoffBaym.jl`). On a nonuniform time grid (`h_1` quadrature weights), updates are:
+Achedmy solves the coupled mean/response dynamics with adaptive two-time Kadanoff-Baym integration (`KadanoffBaym.jl`). On a nonuniform time grid ($h_1$ quadrature weights), updates are:
+
+<!-- ```math
+\dot\mu_i(t)=k_{1i}-k_{2i}\mu_i(t)+\int_0^t d\tau\,\Sigma_\mu^i(t,\tau),
+``` -->
 
 ```math
-\dot\mu_i(t)=k_{1i}-k_{2i}\mu_i(t)+\int_0^t d\tau\,\Sigma_\mu^i(t,\tau),
+\dot\mu_i(t)=k_{1i}-k_{2i}\mu_i(t)+ \tilde\theta_i^{\mathrm{eff}}(t),
 ```
 
 ```math
 \partial_t R_{ij}(t,t')=-k_{2i}R_{ij}(t,t')+\delta_{ij}\delta(t-t')+
-\int_{t'}^t d\tau\sum_k\Sigma_R^{ik}(t,\tau)R_{kj}(\tau,t'),
+\int_{t'}^t \; d\tau h_1(\tau) \sum_k\hat R^{ik}(t,\tau)R_{kj}(\tau,t'),
 ```
 
 ```math
-\mathbf C\approx\mathbf R\,(\mathbf\Sigma_B\odot \mathbf W)\,\mathbf R^{\mathsf T},
+\mathbf C = \mathbf R\,(\mathbf\Sigma_B\odot \mathbf H_1)\,\mathbf R^{\mathsf T},
 \qquad
 N_{ij}(t,t')=C_{ij}(t,t')+\mu_j(t')R_{ij}(t,t').
 ```
 
-Here `\Sigma_\mu`, `\Sigma_R`, and `\Sigma_B` are computed from `c_{\bar m,\bar n}` using one of four closures:
+Here $\Sigma_\mu$, $\Sigma_R$, and $\Sigma_B$ are computed from $c_{\bar m,\bar n}$ using one of four closures:
 
 - `MAK`: first-order local terms only.
-- `MCA`: second-order (`O(\alpha^2)`) truncation.
+- `MCA`: second-order ($O(\alpha^2)$) truncation.
 - `SBR`: single-species self-consistent bubble resummation.
 - `gSBR`: full cross-species and cross-reaction bubble resummation.
 
+**Note** One can optionally also constrain the single-species quadratic order parameter fields by defining `response_type="single"` in `ReactionVariables`. This is less accurate, but only needs the calculation of $P$ instead of $P^2$ responses. Should be used for large systems with many species where the full $P^2$ response calculation is prohibitive.
+
 ## 7. Practical scope and limits
 
-The formulation is designed for Markovian jump processes with polynomial propensities, especially CRNs with at-most-binary reactions where gSBR has the strongest empirical performance. It gives accurate means and two-time functions in regimes where MAK/LNA fail, while avoiding direct solution of the full CME state space.
+**The formulation is designed for Markovian jump processes with polynomial propensities, especially CRNs with at-most-binary reactions** where gSBR has the strongest empirical performance. It gives accurate means and two-time functions in regimes where MAK/LNA fail, while avoiding direct solution of the full CME state space. It also gives a tractable form of the time dependent probability distribution in terms of the effective fields, which can be used for sampling and inference.
 
 For worked examples and API usage, see:
 
 - `docs/src/tutorial.md`
 - `docs/src/examples.md`
 - `docs/src/api.md`
+
+Kernels for higher order reactions and non-polynomial propensities may be derived from the general expressions for $c_{\bar m,\bar n}$, but are not implemented in the current version of Achedmy.jl. Feel free to contribute these if you need them for your applications!

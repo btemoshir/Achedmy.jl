@@ -114,8 +114,8 @@ sol = solve_dynamics!(
 |--------|-------|----------|-------------|
 | **MAK** | ⚡⚡⚡⚡ | ⭐ | Quick estimates, mean-field systems |
 | **MCA** | ⚡⚡⚡ | ⭐⭐ | Weak fluctuations, perturbative regime |
-| **SBR** | ⚡⚡ | ⭐⭐⭐ | Single-species dominant, moderate coupling |
-| **gSBR** | ⚡ | ⭐⭐⭐⭐ | Strong coupling, cross-species correlations |
+| **SBR** | ⚡⚡ | ⭐⭐⭐ | Reaction independent fluctuations, moderate coupling |
+| **gSBR** | ⚡ | ⭐⭐⭐⭐ | Strong coupling, cross-species cross-reaction correlations |
 
 ## Step 5: Access Results
 
@@ -182,7 +182,7 @@ heatmap(times, times, corr_MP,
 
 **Solutions:**
 1. Use more accurate approximation (`"gSBR"` instead of `"MCA"`)
-2. Decrease tolerances (`abstol=1e-8, reltol=1e-8`)
+2. Decrease tolerances (`abstol=1e-5, reltol=1e-5`)
 3. Use `"cross"` response type for strongly coupled species
 4. Check if initial conditions are in valid regime
 
@@ -227,4 +227,4 @@ plot(times, variables.μ[1,:], label="⟨M⟩")
 plot!(times, variables.μ[2,:], label="⟨P⟩")
 ```
 
-That's it! You've successfully simulated a chemical reaction network with Achedmy.jl. 🎉
+That's it! You've successfully simulated a chemical reaction network with Achedmy.jl.
