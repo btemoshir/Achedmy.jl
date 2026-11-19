@@ -68,7 +68,6 @@ using LinearAlgebra
 using BlockArrays
 using ChainRulesCore
 using Distributions
-using PyPlot
 using IterTools
 using Einsum
 using KadanoffBaym
