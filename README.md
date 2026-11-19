@@ -94,7 +94,7 @@ This section gives a compact summary of the formalism implemented in Achedmy. A 
 
 ### Chemical Reaction Network and CME
 
-For $P$ species with copy numbers $ \mathbf{n}=(n_1,\dots,n_P) $, each reaction $\beta$, the reaction network is defined by the stoichiometric coefficients $r_i^\beta$ and $s_i^\beta$ for reactants and products, and the time-dependent rate $k_\beta(\tau)$:
+For $P$ species with copy numbers $\mathbf{n}=(n_1,\dots,n_P)$, each reaction $\beta$, the reaction network is defined by the stoichiometric coefficients $r_i^\beta$ and $s_i^\beta$ for reactants and products, and the time-dependent rate $k_\beta(\tau)$:
 
 ```math
 \sum_{i=1}^P r_i^\beta X_i \xrightarrow{k_\beta(\tau)} \sum_{i=1}^P s_i^\beta X_i.
@@ -140,7 +140,7 @@ The primary observables are
 
 ### Effective Fields
 
-Plefka expansion splits the Hamiltonian as $ H_\alpha=H_0+\alpha H_{\mathrm{int}} $ and introduces effective fields:
+Plefka expansion splits the Hamiltonian as $H_\alpha=H_0+\alpha H_{\mathrm{int}}$ and introduces effective fields:
 
 ```math
 \tilde\theta_i^{\mathrm{eff}}=-\alpha\tilde\theta_i^1-\frac{\alpha^2}{2}\tilde\theta_i^2+\cdots.
@@ -150,7 +150,7 @@ Plefka expansion splits the Hamiltonian as $ H_\alpha=H_0+\alpha H_{\mathrm{int}
 \hat R^{\mathrm{eff}}=-\alpha\hat R^1-\frac{\alpha^2}{2}\hat R^{2}+\cdots,\qquad
 \hat B^{\mathrm{eff}}=-\alpha\hat B^1-\frac{\alpha^2}{2}\hat B^{2}+\cdots.
 ```
-**Achedmy calculates the effective fields $ \tilde\theta_i^{\mathrm{eff}}, \hat R^{\mathrm{eff}}, \hat B^{\mathrm{eff}} $ at different levels of approximations. The fields depend on the reraction rates $k_\beta$, the stoichiometric coefficients $r_i^\beta, s_i^\beta$ and are given self-consistently in terms of the mean and two-time functions $\mu_i(\tau), R_{ij}(\tau,\tau'), C_{ij}(\tau,\tau')$ which involve memory integrals over the past history of the dynamics.**
+**Achedmy calculates the effective fields $\tilde\theta_i^{\mathrm{eff}}, \hat R^{\mathrm{eff}}, \hat B^{\mathrm{eff}}$ at different levels of approximations. The fields depend on the reraction rates $k_\beta$, the stoichiometric coefficients $r_i^\beta, s_i^\beta$ and are given self-consistently in terms of the mean and two-time functions $\mu_i(\tau), R_{ij}(\tau,\tau'), C_{ij}(\tau,\tau')$ which involve memory integrals over the past history of the dynamics.**
 
 Achedmy implements the solution at all approximation levels for arbitrary CRNs with polynomial propensities and upto binary reactions. The approximations are briefly summarized in [Approximation Methods](#approximation-methods) and detailed in the source code, documentation and the manuscript.
 
@@ -181,7 +181,7 @@ c_{\bar m,\bar n}(\tau)=\sum_\beta k_\beta(\tau_-)
 \prod_i\binom{r_i^\beta}{n_i}\mu_i(\tau_-)^{r_i^\beta-n_i}.
 ```
 
-In gSBR, the response kernel is $ \hat R^{\mathrm{eff}}=-\hat R^1-\frac{1}{2}\hat R^{2,\mathrm{gSBR}} $, where $ \hat R^{2,\mathrm{gSBR}} $ is obtained by causal block lower-triangular resummation (`src/BlockOp.jl`, `src/SelfEnergy.jl`). -->
+In gSBR, the response kernel is $\hat R^{\mathrm{eff}}=-\hat R^1-\frac{1}{2}\hat R^{2,\mathrm{gSBR}}$, where $\hat R^{2,\mathrm{gSBR}}$ is obtained by causal block lower-triangular resummation (`src/BlockOp.jl`, `src/SelfEnergy.jl`). -->
 
 ---
 
