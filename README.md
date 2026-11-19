@@ -131,11 +131,12 @@ The generating functional is
 The primary observables are
 
 ```math
-\text{Mean copy numbers}, \quad \mu_i(\tau)=\langle\phi_i(\tau)\rangle=\langle n_i(\tau)\rangle,\quad \\
-\text{Response functions}, \quad R_{ij}(\tau,\tau')=\langle\delta\phi_i(\tau)\delta\tilde\phi_j(\tau')\rangle,\quad \\
-\text{Correlation functions}, \quad C_{ij}(\tau,\tau')=\langle\delta\phi_i(\tau)\delta\phi_j(\tau')\rangle.\\
-\text{Number correlations}, \quad N_{ij}(\tau,\tau')=\langle\delta n_i(\tau)\delta n_j(\tau')\rangle \approx C_{ij}(\tau,\tau')+\mu_j(\tau')R_{ij}(\tau,\tau') .
-
+\begin{aligned}
+\text{Mean copy numbers}, \quad \mu_i(\tau) &= \langle\phi_i(\tau)\rangle = \langle n_i(\tau)\rangle, \\
+\text{Response functions}, \quad R_{ij}(\tau,\tau') &= \langle\delta\phi_i(\tau)\delta\tilde\phi_j(\tau')\rangle, \\
+\text{Correlation functions}, \quad C_{ij}(\tau,\tau') &= \langle\delta\phi_i(\tau)\delta\phi_j(\tau')\rangle, \\
+\text{Number correlations}, \quad N_{ij}(\tau,\tau') &= \langle\delta n_i(\tau)\delta n_j(\tau')\rangle \approx C_{ij}(\tau,\tau') + \mu_j(\tau')R_{ij}(\tau,\tau').
+\end{aligned}
 ```
 
 ### Effective Fields
