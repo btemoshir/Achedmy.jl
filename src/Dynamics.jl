@@ -372,9 +372,12 @@ function integrate2(hs::Vector, t1, t2, Σ::GreenFunction, R::GreenFunction, μ:
 
     retval = zero(R[t1,t2])
 
-    #for k in t2+1:t1
-    for k in t2:t1
-        retval += Σ[t1,k].*R[k,t2].*hs[k]
+    # Index element-wise like integrate2_cross: Σ[t1,k] and R[k,t2] each copy a
+    # slice, and this sum runs O(T^3) times per solve
+    for j in eachindex(retval)
+        for k in t2:t1
+            retval[j] += Σ[j,t1,k]*R[j,k,t2]*hs[k]
+        end
     end
 
     return retval

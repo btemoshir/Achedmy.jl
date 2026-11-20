@@ -179,13 +179,7 @@ function block_mat_mul(mat1,mat2)
     Calculates the matrix product between two compatible matrices etc which have the block structure! The first two indices corresspond to the list index.
     """
                                     
-    len_rows = size(mat1, 3)
-    mul = similar(mat1)
-
-    for i in 1:len_rows, j in 1:len_rows, k in 1:len_rows
-        mul[:, :, i, j] .+= mat1[:, :, i, k] * mat2[:, :, k, j]
-    end
-
+    # @einsum with := allocates and returns a fresh array
     @einsum mul[i,n,k,o] := mat1[i,j,k,l] * mat2[j,n,l,o]
     
     return mul
