@@ -64,8 +64,8 @@ function mnList(structure)
     
     for i in 1:num_int
         
-        x = vec(collect(product([0:Int(max(s_i[j,i], r_i[j,i])) for j in 1:num_species]...)))
-        y = vec(collect(product([0:Int(r_i[j,i]) for j in 1:num_species]...)))
+        x = vec(collect(Iterators.product([0:Int(max(s_i[j,i], r_i[j,i])) for j in 1:num_species]...)))
+        y = vec(collect(Iterators.product([0:Int(r_i[j,i]) for j in 1:num_species]...)))
         
         #The above creates tuples(Int, Int ... , Int (len = num_species)) which needs to be converted to an array,
         # Otherwise it runs into issues later!
@@ -91,8 +91,8 @@ function mnList(structure)
     end
     
     
-    a = vec(collect(product([0:max1[j] for j in 1:num_species]...)))
-    b = vec(collect(product([0:max2[j] for j in 1:num_species]...)))
+    a = vec(collect(Iterators.product([0:max1[j] for j in 1:num_species]...)))
+    b = vec(collect(Iterators.product([0:max2[j] for j in 1:num_species]...)))
 
     push!(m_listFULL, a)
     push!(n_listFULL, b)

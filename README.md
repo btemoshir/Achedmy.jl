@@ -36,7 +36,7 @@ TODO: Implement proper handling of initial correlation $C_{ij}(0,0)$ values! -->
 [![codecov](https://codecov.io/gh/btemoshir/achedmy/branch/main/graph/badge.svg)](https://codecov.io/gh/btemoshir/achedmy) -->
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) 
-[![Julia](https://img.shields.io/badge/Julia-1.9+-9558B2.svg)](https://julialang.org/) 
+[![Julia](https://img.shields.io/badge/Julia-1.12+-9558B2.svg)](https://julialang.org/) 
 [![Docs](https://img.shields.io/badge/docs-stable-blue.svg)](https://btemoshir.github.io/Achedmy.jl/stable/) 
 [![CI](https://github.com/btemoshir/Achedmy.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/btemoshir/Achedmy.jl/actions/workflows/CI.yml) 
 <!-- [![codecov](https://codecov.io/gh/btemoshir/Achedmy.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/btemoshir/Achedmy.jl) -->
@@ -202,7 +202,7 @@ In gSBR, the response kernel is $\hat R^{\mathrm{eff}}=-\hat R^1-\frac{1}{2}\hat
 
 ### Prerequisites
 
-- Julia 1.9 or later
+- Julia 1.12 or later
 - Git (for cloning the repository)
 
 ### Install from Source
@@ -585,7 +585,7 @@ The test suite covers:
 ### Continuous Integration
 
 The package uses GitHub Actions for automated testing:
-- **CI.yml**: Tests on Julia 1.9, and latest across macOS and Windows
+- **CI.yml**: Tests on Julia 1.12, and latest across macOS and Windows
 - **CompatHelper.yml**: Automatically updates dependency compatibility
 - **TagBot.yml**: Automatic version tagging
 

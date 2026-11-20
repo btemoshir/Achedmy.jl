@@ -13,20 +13,19 @@ on:
 
 jobs:
   test:
-    name: Julia ${{ matrix.version }} - ${{ matrix.os }} - ${{ matrix.arch }}
+    name: Julia ${{ matrix.version }} - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
         version:
-          - '1.9' # LTS version
+          - '1.12' # oldest supported: KadanoffBaym 1.5 needs Julia >= 1.12
+          - '1'    # latest release
         os:
           # - ubuntu-latest #Pyimport error with conda
           - macOS-latest
           - windows-latest
-        arch:
-          - x64
         exclude:
           # Reduce test matrix size
           - os: macOS-latest
@@ -40,7 +39,6 @@ jobs:
       - uses: julia-actions/setup-julia@v1
         with:
           version: ${{ matrix.version }}
-          arch: ${{ matrix.arch }}
       
       - uses: julia-actions/cache@v1
       
@@ -66,11 +64,7 @@ jobs:
       
       - uses: julia-actions/setup-julia@v1
         with:
-          version: '1.9'
-          # same arch as the test matrix: without this the job inherits the
-          # runner's ARM64, and native aarch64 Julia 1.9.4 hangs forever in
-          # precompilation on the macos-26-arm64 image
-          arch: x64
+          version: '1'
       
       - uses: julia-actions/cache@v1
       
