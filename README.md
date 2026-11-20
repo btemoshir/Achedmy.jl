@@ -524,13 +524,12 @@ end
 ### Parameter Sweeps
 
 ```julia
+@unpack k_f = enzyme_system
 alpha_range = [0.01, 0.1, 1.0, 10.0]
 SOL, VAR = [], []
 
 for α in alpha_range
-    enzyme_system.defaults[k_f] = α
-    
-    structure = Achedmy.ReactionStructure(enzyme_system)
+    structure = Achedmy.ReactionStructure(enzyme_system; external_initialization=Dict(k_f => α))
     variables = Achedmy.ReactionVariables(structure, "cross")
     sol = Achedmy.solve_dynamics!(structure, variables, selfEnergy="gSBR")
     

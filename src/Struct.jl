@@ -121,10 +121,12 @@ function ReactionStructure(reaction_system::ReactionSystem;external_initializati
 
     # ModelingToolkit removed `sys.defaults`; the default values now live in
     # `initial_conditions` and are stored as symbolic constants, so each lookup
-    # below is unwrapped to a number with Symbolics.value
-    defaults = Catalyst.ModelingToolkitBase.get_initial_conditions(reaction_system)
+    # below is unwrapped to a number with Symbolics.value. Copy, so overrides
+    # from external_initialization don't change the system's own defaults
+    defaults = copy(Catalyst.ModelingToolkitBase.get_initial_conditions(reaction_system))
 
-    if external_initialization
+    # `!== false`: external_initialization is false or a Dict, and a Dict can't be used as a Bool
+    if external_initialization !== false
         merge!(defaults,external_initialization)
     end
 
