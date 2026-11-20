@@ -151,7 +151,7 @@ Plefka expansion splits the Hamiltonian as $H_\alpha=H_0+\alpha H_{\mathrm{int}}
 \hat R^{\mathrm{eff}}=-\alpha\hat R^1-\frac{\alpha^2}{2}\hat R^{2}+\cdots,\qquad
 \hat B^{\mathrm{eff}}=-\alpha\hat B^1-\frac{\alpha^2}{2}\hat B^{2}+\cdots.
 ```
-**Achedmy calculates the effective fields $\tilde\theta_i^{\mathrm{eff}}, \hat R^{\mathrm{eff}}, \hat B^{\mathrm{eff}}$ at different levels of approximations. The fields depend on the reraction rates $k_\beta$, the stoichiometric coefficients $r_i^\beta, s_i^\beta$ and are given self-consistently in terms of the mean and two-time functions $\mu_i(\tau), R_{ij}(\tau,\tau'), C_{ij}(\tau,\tau')$ which involve memory integrals over the past history of the dynamics.**
+**Achedmy calculates the effective fields $\tilde\theta_i^{\mathrm{eff}}$, $\hat R^{\mathrm{eff}}$, $\hat B^{\mathrm{eff}}$ at different levels of approximations. The fields depend on the reaction rates $k_\beta$, the stoichiometric coefficients $r_i^\beta, s_i^\beta$ and are given self-consistently in terms of the mean and two-time functions $\mu_i(\tau), R_{ij}(\tau,\tau'), C_{ij}(\tau,\tau')$ which involve memory integrals over the past history of the dynamics.**
 
 Achedmy implements the solution at all approximation levels for arbitrary CRNs with polynomial propensities and upto binary reactions. The approximations are briefly summarized in [Approximation Methods](#approximation-methods) and detailed in the source code, documentation and the manuscript.
 
