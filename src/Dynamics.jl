@@ -249,9 +249,11 @@ function solve_dynamics!(structure,variables; selfEnergy="gSBR", tmax=1., tstart
         t = length(sol.w)
         for j in 1:structure.num_species
             variables.C[j,:,:] .= 0.
-            R1 = collect(ttt <= tt ? variables.R[j,tt,ttt] : 0 for tt in 1:t, ttt in 1:t)
+            # 0.0, not 0: a Float64/Int ternary makes collect return a Matrix{Real},
+            # which sends the product below to a slow, allocating generic matmul
+            R1 = collect(ttt <= tt ? variables.R[j,tt,ttt] : 0.0 for tt in 1:t, ttt in 1:t)
             ΣB = collect(variables.Σ_B[j,tt,ttt].*sol.w[tt][tt] for tt in 1:t, ttt in 1:t)
-            R2 = collect(ttt <= tt ? variables.R[j,tt,ttt].*sol.w[tt][ttt] : 0 for tt in 1:t, ttt in 1:t)
+            R2 = collect(ttt <= tt ? variables.R[j,tt,ttt].*sol.w[tt][ttt] : 0.0 for tt in 1:t, ttt in 1:t)
             variables.C[j,1:t,1:t] += R1*(ΣB*transpose(R2))                   
             
             #Old update -- IGNORE ---
@@ -315,11 +317,11 @@ function solve_dynamics!(structure,variables; selfEnergy="gSBR", tmax=1., tstart
                 for j_sum1 in 1:structure.num_species
                     for j_sum2 in 1:structure.num_species
 
-                        R1 = collect(ttt <= tt ? variables.R[j,j_sum1,tt,ttt] : 0 for tt in 1:t, ttt in 1:t)                            
+                        R1 = collect(ttt <= tt ? variables.R[j,j_sum1,tt,ttt] : 0.0 for tt in 1:t, ttt in 1:t)                            
 
                         ΣB = collect(variables.Σ_B[j_sum1,j_sum2,tt,ttt].*sol.w[tt][tt] for tt in 1:t, ttt in 1:t)
 
-                        R2 = collect(ttt <= tt ? variables.R[j2,j_sum2,tt,ttt].*sol.w[tt][ttt] : 0 for tt in 1:t, ttt in 1:t)
+                        R2 = collect(ttt <= tt ? variables.R[j2,j_sum2,tt,ttt].*sol.w[tt][ttt] : 0.0 for tt in 1:t, ttt in 1:t)
 
                         variables.C[j,j2,1:t,1:t] += R1 * (ΣB * transpose(R2))
 
