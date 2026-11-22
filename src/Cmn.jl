@@ -35,12 +35,14 @@ in the Plefka expansion.
 
 ```julia
 rn = @reaction_network begin
+    @species S(t)=1.0 E(t)=0.9 SE(t)=0.1 P(t)=0.0
+    @parameters k1=1.0 k2=0.1 k3=1.0
     k1, S + E --> SE
     k2, SE --> S + E
     k3, SE --> P + E
 end
-structure = ReactionStructure(rn, [:S=>100, :E=>10, :SE=>0, :P=>0])
-m_list, n_list, m_full, n_full, m_new, n_new = mnList(structure)
+structure = ReactionStructure(rn)
+m_list, n_list, m_full, n_full, m_new, n_new = Achedmy.mnList(structure)
 
 # m_new contains all unique multi-indices like [0,0,0,0], [1,0,0,0], [0,1,0,0], etc.
 ```

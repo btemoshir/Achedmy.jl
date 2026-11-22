@@ -28,6 +28,7 @@ with discrete molecular number fluctuations using dynamical free energy and Plef
 
 ```julia
 using Achedmy, Catalyst
+using LinearAlgebra  # for diag
 
 # Define reaction network
 rn = @reaction_network begin
