@@ -489,6 +489,8 @@ Serialization     # Save/load results
 PyPlot           # Plotting
 PyCall           # Python interop
 LaTeXStrings     # LaTeX labels
+GraphMakie       # Network diagrams (plot_network)
+CairoMakie       # Makie backend for plot_network
 MomentClosure    # Normal closure comparison
 ```
 
@@ -497,7 +499,8 @@ MomentClosure    # Normal closure comparison
 ```julia
 using Pkg
 Pkg.add(["Catalyst", "LinearAlgebra", "DifferentialEquations", 
-         "Serialization", "PyPlot", "LaTeXStrings"])
+         "Serialization", "PyPlot", "LaTeXStrings",
+         "GraphMakie", "CairoMakie"])
 Pkg.add(url="https://github.com/NonequilibriumDynamics/KadanoffBaym.jl")
 ```
 
