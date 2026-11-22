@@ -177,8 +177,8 @@ This captures the leading-order effect of fluctuations on the mean dynamics.
 variables = ReactionVariables(structure, "single")
 sol = solve_dynamics!(structure, variables, selfEnergy="MCA", tmax=10.0)
 
-# Check that fluctuations are captured
-variance = diag(variables.N[1,1,:,:])
+# Check that fluctuations are captured ("single" response type: N[i, t, t′])
+variance = diag(variables.N[1,:,:])
 @assert any(variance .> 0)  # Non-zero fluctuations
 ```
 

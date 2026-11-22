@@ -6,10 +6,10 @@
 
 Achedmy implements several approximation schemes for computing two-time response and correlation functions:
 
-- **MAK (Mean-field Approximation)**: Fastest, suitable for mean-field dominated systems
+- **MAK (Mass-Action Kinetics)**: Mean-field, no memory; fastest
 - **MCA (Mode Coupling Approximation)**: O(α²) perturbative expansion
-- **SBR (Single-species Bubble Resummation)**: Self-consistent bubbles for each species
-- **gSBR (Generalized SBR)**: Full cross-species correlations (most accurate)
+- **SBR (Self-consistent Bubble Resummation)**: Single-species self-energies, ignores cross-reaction fluctuations
+- **gSBR (Generalized SBR)**: Full cross-species and cross-reaction corrections (most accurate)
 
 ## Key Features
 
@@ -24,27 +24,30 @@ Achedmy implements several approximation schemes for computing two-time response
 ```julia
 using Catalyst, Achedmy
 
-# Define enzyme kinetics network
+# Define enzyme kinetics network. Achedmy reads the rates and the initial
+# mean copy numbers from the network's default values.
 rn = @reaction_network begin
+    @species S(t)=1.0 E(t)=0.9 SE(t)=0.1 P(t)=0.0
+    @parameters k1=1.0 k2=0.1 k3=1.0
     k1, S + E --> SE
-    k2, SE --> S + E  
+    k2, SE --> S + E
     k3, SE --> P + E
 end
 
 # Set up system
-structure = ReactionStructure(rn, [:S=>100, :E=>10, :SE=>0, :P=>0])
-variables = ReactionVariables(structure, "single")
+structure = ReactionStructure(rn)
+variables = ReactionVariables(structure, "cross")
 
 # Solve with gSBR approximation
-sol = solve_dynamics!(structure, variables, 
-                     selfEnergy="gSBR", 
-                     tmax=5.0, 
-                     abstol=1e-6)
+sol = solve_dynamics!(structure, variables,
+                     selfEnergy="gSBR",
+                     tmax=5.0,
+                     atol=1e-3, rtol=1e-2)
 
 # Access results
-means = variables.μ  # Mean densities
-correlations = variables.N  # Two-time correlations
-responses = variables.R  # Two-time responses
+means = variables.μ         # μ[i, t]: mean copy numbers
+correlations = variables.N  # N[i, j, t, t′]: two-time number-number correlations
+responses = variables.R     # R[i, j, t, t′]: two-time responses
 ```
 
 ## Installation
