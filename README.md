@@ -494,6 +494,11 @@ CairoMakie       # Makie backend for plot_network
 MomentClosure    # Normal closure comparison
 ```
 
+MomentClosure can't be installed in the same environment as Achedmy: its
+dependencies need RecursiveArrayTools 4, while KadanoffBaym needs version 3.
+Run the normal-closure comparison cells in the notebooks in a separate
+environment with Catalyst, MomentClosure and OrdinaryDiffEq.
+
 ### Installation
 
 ```julia

@@ -1,7 +1,7 @@
 name = "Achedmy"
 uuid = "3809e951-761c-4e21-b9ed-bc66e666ef58"
 authors = ["Moshir Harsh <btemoshir@gmail.com>"]
-version = "0.1.0"
+version = "0.2.0"
 
 [deps]
 BlockArrays = "8e7c35d0-a365-5155-bbbb-fb81a777f24e"
