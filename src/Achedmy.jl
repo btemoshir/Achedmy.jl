@@ -53,12 +53,12 @@ variance_P = diag(variables.N[2,2,:,:])  # Variance over time
 
 If you use Achedmy.jl in your research, please cite:
 
-Harsh, M. (2025). Memory-corrected dynamics of chemical reaction networks 
-via Plefka expansion. In preparation.
+M. Harsh and P. Sollich, Dynamical Variational Theory of Stochastic Reaction
+Networks, arXiv:2611.25491 (2026). https://arxiv.org/abs/2611.25491
 
 # See Also
 
-- [GitHub Repository](https://github.com/btemoshir/achedmy)
+- [GitHub Repository](https://github.com/btemoshir/Achedmy.jl)
 - [Catalyst.jl](https://docs.sciml.ai/Catalyst/stable/)
 - [KadanoffBaym.jl](https://nonequilibriumdynamics.github.io/KadanoffBaym.jl/)
 """
