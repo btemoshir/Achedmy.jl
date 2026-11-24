@@ -23,15 +23,9 @@ jobs:
           - '1.12' # oldest supported: KadanoffBaym 1.5 needs Julia >= 1.12
           - '1'    # latest release
         os:
-          # - ubuntu-latest #Pyimport error with conda
+          - ubuntu-latest
           - macOS-latest
           - windows-latest
-        exclude:
-          # Reduce test matrix size
-          - os: macOS-latest
-            version: '1.6'
-          - os: windows-latest
-            version: '1.6'
     
     steps:
       - uses: actions/checkout@v4
