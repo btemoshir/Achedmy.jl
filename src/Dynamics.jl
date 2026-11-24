@@ -107,25 +107,23 @@ end
 structure = ReactionStructure(enzyme)
 variables = ReactionVariables(structure, "cross")
 
-# Solve with high accuracy
+# Solve (loose tolerances first; tighten them if needed, see Performance Tips)
 sol = solve_dynamics!(
     structure, 
     variables,
     selfEnergy = "gSBR",
     tmax = 5.0,
     tstart = 0.0,
-    atol = 1e-4,
-    rtol = 1e-3
+    atol = 1e-3,
+    rtol = 1e-2
 )
 
-# Check convergence
-@assert sol.retcode == :Success "Solver did not converge!"
-
-# Extract results
+# Extract results (sol is a named tuple: sol.t is the adaptive time grid)
+using LinearAlgebra  # for diag
 time = sol.t
 mean_product = variables.μ[4, :]  # P(t)
 variance_product = diag(variables.N[4,4,:,:])  # Var[P(t)]
-response_SE = variables.R[1,2,:,:]  # How E responds to perturbation in S
+response_SE = variables.R[1,2,:,:]  # How S responds to a perturbation of E
 
 # Visualize
 using PyPlot

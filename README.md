@@ -224,7 +224,7 @@ Pkg.instantiate()
 
 ```julia
 using Pkg
-Pkg.develop(path="/path/to/achedmy")
+Pkg.develop(path="/path/to/Achedmy.jl")
 ```
 
 ###  Use Julia's package manager from terminal
@@ -381,7 +381,7 @@ Achedmy implements four approximation schemes of increasing accuracy:
 - **Accuracy:** Best available, validated against master equation
 - **Cost:** Highest
 
-**Recommendation:** Start with gSBR unless computational cost is prohibitive, especially for systems with strong couplings or small molecule numbers.
+**Recommendation:** If accuracy is the main concern from the outset, start with gSBR unless computational cost is prohibitive, especially for systems with strong couplings or small molecule numbers. Otherwise, start with MAK and move to SBR, then gSBR with single-species and then cross-species responses, as needed (see [Numerical Instabilities](#numerical-instabilities)).
 
 ---
 
@@ -475,24 +475,31 @@ achedmy/
 
 ### Julia Packages
 
+Achedmy itself uses these, and they are installed with it:
+
 ```julia
 Catalyst          # Reaction network DSL
 KadanoffBaym      # Adaptive time-stepping for memory equations
 LinearAlgebra     # Matrix operations
-DifferentialEquations  # ODE solvers
-Serialization     # Save/load results
+Einsum            # Tensor contractions in the block operations
 ```
 
 ### Optional (for examples)
 
 ```julia
-PyPlot           # Plotting
-PyCall           # Python interop
-LaTeXStrings     # LaTeX labels
-GraphMakie       # Network diagrams (plot_network)
-CairoMakie       # Makie backend for plot_network
-MomentClosure    # Normal closure comparison
+PyPlot                 # Plotting
+PyCall, Conda          # Python interop (master equation and EMRE comparisons)
+LaTeXStrings           # LaTeX labels
+Serialization          # Load the saved results in data/
+DifferentialEquations  # Michaelis-Menten QSS comparison (enzyme notebook)
+CSV, DataFrames        # Saved moment-closure results (enzyme notebook)
+GraphMakie             # Network diagrams (plot_network)
+CairoMakie             # Makie backend for plot_network
+MomentClosure          # Normal closure comparison
 ```
+
+The master-equation and EMRE comparisons call the Python code in
+`extras/other_dynamics` through PyCall; its Python needs numpy, scipy and tqdm.
 
 MomentClosure can't be installed in the same environment as Achedmy: its
 dependencies need RecursiveArrayTools 4, while KadanoffBaym needs version 3.
@@ -503,10 +510,12 @@ environment with Catalyst, MomentClosure and OrdinaryDiffEq.
 
 ```julia
 using Pkg
-Pkg.add(["Catalyst", "LinearAlgebra", "DifferentialEquations", 
-         "Serialization", "PyPlot", "LaTeXStrings",
+# Achedmy, which pulls in KadanoffBaym and its other dependencies
+Pkg.add(url="https://github.com/btemoshir/Achedmy.jl")
+# Catalyst, to define networks, and the packages the example notebooks use
+Pkg.add(["Catalyst", "PyPlot", "PyCall", "Conda", "LaTeXStrings",
+         "Serialization", "DifferentialEquations", "CSV", "DataFrames",
          "GraphMakie", "CairoMakie"])
-Pkg.add(url="https://github.com/NonequilibriumDynamics/KadanoffBaym.jl")
 ```
 
 ---
@@ -631,7 +640,7 @@ If you see negative variances or diverging solutions:
 - Check initial conditions are physical (non-negative)
 - Try MAK first and then move to SBR, gSBR with single species response and cross species response in order. 
 - In case of instabilities, the cross species response gSBR can be more stable than single species response gSBR or any SBR.
-- Decrease `dt_max` to force smaller time steps. 
+- Decrease `dtmax` to force smaller time steps. 
 
 ---
 

@@ -124,9 +124,10 @@ vars_single = ReactionVariables(structure, "single")
 sol_single = solve_dynamics!(structure, vars_single, selfEnergy="gSBR", tmax=5.0)
 
 # Access results
+using LinearAlgebra  # for diag
 mean_substrate = vars_cross.μ[1, :]              # Mean S(t)
 variance_product = diag(vars_cross.N[4,4,:,:])  # Var(P) over time
-response_SE = vars_cross.R[1,2,:,:]              # R_SE(t,t')
+response_SE = vars_cross.R[1,2,:,:]              # R_SE(t,t′): response of S to a perturbation of E
 cross_corr_SP = vars_cross.N[1,4,:,:]            # ⟨δS(t)δP(t')⟩
 ```
 

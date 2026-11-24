@@ -287,11 +287,13 @@ where each \$c_{mn}^β(t)\$ includes both combinatorial factors and mean-field d
 This function appears repeatedly in all self-energy calculations:
 
 ```julia
-# In self_energy_mak_noC!
-Σ_R[i,t] += c_mnFULL(structure, variables, [1,0,...], [1,0,...], t)
+# In self_energy_mak_noC!: unit multi-index e_i for species i
+e_i = zeros(Int, structure.num_species); e_i[i] = 1
+Σ_R[i,t,t] = c_mnFULL(structure, variables, e_i, e_i, t)
 
-# In self_energy_SBR!  
-Σ_R[i,t] += sum(c_mnFULL(..., m, n, t) * R^m * R^n for m,n in lists)
+# In self_energy_SBR! and the other memory self-energies, the same coefficients
+# multiply products of response functions, summed over the (m, n) index pairs
+# from mnList(structure)
 ```
 
 # Performance
