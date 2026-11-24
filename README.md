@@ -405,14 +405,27 @@ The `examples/` directory contains detailed Jupyter notebooks for three systems:
 - Epidemic spreading in finite populations
 - Time-dependent infection and recovery
 - Critical role of fluctuations near transitions
-- Population-size effects drastically alter dynamics; mean field predicts infection spreads to entire population, while gSBR correctly predicts extinction in finite populations.
+- Population-size effects drastically alter dynamics: mass-action kinetics predicts that the infection reaches the entire population, while gSBR, like the exact master equation, predicts that on average about half of the susceptibles are never infected.
 
 ### Running Examples
 
+The notebooks have their own environment, `examples/Project.toml`, which uses
+this checkout of Achedmy. Install it once, then start Jupyter in `examples/`:
+
 ```bash
+julia --project=examples -e 'using Pkg; Pkg.instantiate()'
 cd examples/
 jupyter notebook enzyme_kinetics.ipynb
 ```
+
+The Julia kernel must run Julia 1.12 or later. A kernel installed with IJulia's
+default `--project=@.` uses `examples/Project.toml` automatically:
+
+```bash
+julia +1.12 -e 'using Pkg; Pkg.add("IJulia"); using IJulia; installkernel("Julia")'
+```
+
+The notebooks load pre-computed results from `data/`, which is not in the repository.
 
 **Note:** Examples require additional Python libraries for comparison with other methods:
 - `cheMASTER` (Master equation solver)
@@ -484,7 +497,7 @@ LinearAlgebra     # Matrix operations
 Einsum            # Tensor contractions in the block operations
 ```
 
-### Optional (for examples)
+### Optional (for examples, in `examples/Project.toml`)
 
 ```julia
 PyPlot                 # Plotting
@@ -495,7 +508,7 @@ DifferentialEquations  # Michaelis-Menten QSS comparison (enzyme notebook)
 CSV, DataFrames        # Saved moment-closure results (enzyme notebook)
 GraphMakie             # Network diagrams (plot_network)
 CairoMakie             # Makie backend for plot_network
-MomentClosure          # Normal closure comparison
+MomentClosure          # Normal closure comparison (not included: separate environment, see below)
 ```
 
 The master-equation and EMRE comparisons call the Python code in
@@ -512,11 +525,12 @@ environment with Catalyst, MomentClosure and OrdinaryDiffEq.
 using Pkg
 # Achedmy, which pulls in KadanoffBaym and its other dependencies
 Pkg.add(url="https://github.com/btemoshir/Achedmy.jl")
-# Catalyst, to define networks, and the packages the example notebooks use
-Pkg.add(["Catalyst", "PyPlot", "PyCall", "Conda", "LaTeXStrings",
-         "Serialization", "DifferentialEquations", "CSV", "DataFrames",
-         "GraphMakie", "CairoMakie"])
+# Catalyst, to define reaction networks
+Pkg.add("Catalyst")
 ```
+
+The optional packages for the notebooks are in `examples/Project.toml`; see
+[Running Examples](#running-examples).
 
 ---
 
