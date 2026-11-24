@@ -39,14 +39,14 @@ TODO: Implement proper handling of initial correlation $C_{ij}(0,0)$ values! -->
 [![Julia](https://img.shields.io/badge/Julia-1.12+-9558B2.svg)](https://julialang.org/) 
 [![Docs](https://img.shields.io/badge/docs-stable-blue.svg)](https://btemoshir.github.io/Achedmy.jl/stable/) 
 [![CI](https://github.com/btemoshir/Achedmy.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/btemoshir/Achedmy.jl/actions/workflows/CI.yml) 
+[![arXiv](https://img.shields.io/badge/arXiv-2611.25491-b31b1b.svg)](https://arxiv.org/abs/2611.25491) 
 <!-- [![codecov](https://codecov.io/gh/btemoshir/Achedmy.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/btemoshir/Achedmy.jl) -->
 
 A Julia package implementing **memory-corrected dynamics** for chemical reaction networks (CRNs) with discrete molecular number fluctuations. Achedmy captures the effects of intrinsic noise that become significant in the regime of small molecule numbers or large fluctuations, going far beyond standard mean-field approximations.
 
 **Author:** Moshir Harsh  
 **Email:** btemoshir@gmail.com  
-**Related Paper:** In preparation 
-<!-- Plefka expansion for chemical reaction networks (PRX, in preparation) -->
+**Paper:** M. Harsh and P. Sollich, [*Dynamical Variational Theory of Stochastic Reaction Networks*](https://arxiv.org/abs/2611.25491), arXiv:2611.25491 (2026)
 
 ---
 
@@ -208,8 +208,8 @@ In gSBR, the response kernel is $\hat R^{\mathrm{eff}}=-\hat R^1-\frac{1}{2}\hat
 ### Install from Source
 
 ```bash
-git clone https://github.com/btemoshir/achedmy.git
-cd achedmy
+git clone https://github.com/btemoshir/Achedmy.jl.git
+cd Achedmy.jl
 ```
 
 In Julia REPL:
@@ -596,7 +596,7 @@ The package uses GitHub Actions for automated testing:
 - **CompatHelper.yml**: Automatically updates dependency compatibility
 - **TagBot.yml**: Automatic version tagging
 
-View build status: [![CI](https://github.com/btemoshir/achedmy/workflows/CI/badge.svg)](https://github.com/btemoshir/achedmy/actions)
+View build status: [![CI](https://github.com/btemoshir/Achedmy.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/btemoshir/Achedmy.jl/actions/workflows/CI.yml)
 
 ### Writing New Tests
 
@@ -656,14 +656,18 @@ end
 
 If you use Achedmy.jl or gSBR/SBR methods in your research, please cite:
 
-<!-- ```bibtex
-@article{harsh2025plefka,
-  title={Memory-corrected dynamics of chemical reaction networks via Plefka expansion},
-  author={Harsh, Moshir and [Co-authors]},
-  journal={Physical Review X},
-  year={2025},
-  note={In preparation}
-} -->
+M. Harsh and P. Sollich, [*Dynamical Variational Theory of Stochastic Reaction Networks*](https://arxiv.org/abs/2611.25491), arXiv:2611.25491 (2026)
+
+```bibtex
+@misc{harsh2026dynamical,
+  title={Dynamical Variational Theory of Stochastic Reaction Networks},
+  author={Harsh, Moshir and Sollich, Peter},
+  year={2026},
+  eprint={2611.25491},
+  archivePrefix={arXiv},
+  primaryClass={cond-mat.stat-mech},
+  url={https://arxiv.org/abs/2611.25491}
+}
 ```
 
 ---
@@ -710,12 +714,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Moshir Harsh**  
 Email: btemoshir@gmail.com  
-GitHub: [@yourusername](https://github.com/yourusername) 
+GitHub: [@btemoshir](https://github.com/btemoshir) 
 
 - Work done at Institute for Theoretical Physics, University of Göttingen
 - Current affiliation: Harvard Medical School, Harvard University
 
-For bug reports and feature requests, please use the [GitHub Issues](https://github.com/yourusername/achedmy/issues) page.
+For bug reports and feature requests, please use the [GitHub Issues](https://github.com/btemoshir/Achedmy.jl/issues) page.
 
 ---
 

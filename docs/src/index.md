@@ -2,6 +2,8 @@
 
 **Achedmy.jl** is a Julia package for simulating chemical reaction network dynamics using memory-corrected equations of motion derived from the Plefka expansion. The package provides fast, accurate approximations to the exact stochastic dynamics without requiring computationally expensive Gillespie simulations.
 
+The theory and methods are described in M. Harsh and P. Sollich, [*Dynamical Variational Theory of Stochastic Reaction Networks*](https://arxiv.org/abs/2611.25491), arXiv:2611.25491 (2026).
+
 ## Overview
 
 Achedmy implements several approximation schemes for computing two-time response and correlation functions:
@@ -73,12 +75,17 @@ Depth = 2
 
 If you use Achedmy.jl in your research, please cite:
 
+M. Harsh and P. Sollich, [*Dynamical Variational Theory of Stochastic Reaction Networks*](https://arxiv.org/abs/2611.25491), arXiv:2611.25491 (2026)
+
 ```bibtex
-@article{achedmy2024,
-  title={Memory-corrected dynamics of chemical reaction networks},
-  author={Your Name},
-  journal={Journal Name},
-  year={2024}
+@misc{harsh2026dynamical,
+  title={Dynamical Variational Theory of Stochastic Reaction Networks},
+  author={Harsh, Moshir and Sollich, Peter},
+  year={2026},
+  eprint={2611.25491},
+  archivePrefix={arXiv},
+  primaryClass={cond-mat.stat-mech},
+  url={https://arxiv.org/abs/2611.25491}
 }
 ```
 

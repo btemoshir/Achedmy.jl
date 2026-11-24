@@ -1,6 +1,6 @@
 # Mathematical Theory
 
-This page summarizes the theory implemented in `Achedmy.jl` using the notation of the accompanying manuscript. It includes the chemical reaction network definition, the path-integral formulation, effective fields from (extended) Plefka expansion, and the mean/response/correlation update equations solved numerically in the package.
+This page summarizes the theory implemented in `Achedmy.jl` using the notation of the accompanying paper, [arXiv:2611.25491](https://arxiv.org/abs/2611.25491). It includes the chemical reaction network definition, the path-integral formulation, effective fields from (extended) Plefka expansion, and the mean/response/correlation update equations solved numerically in the package.
 
 ## 1. Chemical reaction networks and the stochastic dynamics
 
