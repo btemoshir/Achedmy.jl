@@ -647,7 +647,7 @@ function self_energy_SBR_mixed_cross_noC!(structure, variables, times, h1, h2 , 
 
         if length(n_listNEW_R) > 0 
 
-            cMN = collect(==(tt,ttt)*c_mnFULL(structure,variables,n′,n′′,tt) for n′ in n_listNEW_R, n′′ in n_listNEW_R,  tt in 1:t, ttt in 1:t)
+            cMN = collect((tt == ttt ? c_mnFULL(structure,variables,n′,n′′,tt) : 0.0) for n′ in n_listNEW_R, n′′ in n_listNEW_R,  tt in 1:t, ttt in 1:t)
 
             Γ   = collect(==(sum(n′),sum(n′′)).*response_combinations(n′,n′′,variables.R[:,:,tt,ttt]) for n′ in n_listNEW_R, n′′ in n_listNEW_R, tt in 1:t, ttt in 1:t)
             
@@ -665,7 +665,7 @@ function self_energy_SBR_mixed_cross_noC!(structure, variables, times, h1, h2 , 
 
             Ξ  = block_tri_lower_inverse(block_identity(length(n_listNEW_R),t) .- block_lower_shift(χ))
 
-            cN0 = collect(==(tt,ttt)*c_mnFULL(structure,variables,n′,temp0,ttt) for n′ in n_listNEW_R, tt in 1:t, ttt in 1:t)  
+            cN0 = collect((tt == ttt ? c_mnFULL(structure,variables,n′,temp0,ttt) : 0.0) for n′ in n_listNEW_R, tt in 1:t, ttt in 1:t)  
             cN0 = block_mat_mix_mul(Γ,cN0)
 
             Ξ_μ = block_mat_mix_mul(Ξ,cN0)
@@ -686,7 +686,7 @@ function self_energy_SBR_mixed_cross_noC!(structure, variables, times, h1, h2 , 
                     temp2       = zeros(Int,structure.num_species)
                     temp2[j]    = 1
                                                         
-                    cN1 = collect(==(tt,ttt)*c_mnFULL(structure,variables,n′,temp2,ttt) for n′ in n_listNEW_R,  tt in 1:t, ttt in 1:t)
+                    cN1 = collect((tt == ttt ? c_mnFULL(structure,variables,n′,temp2,ttt) : 0.0) for n′ in n_listNEW_R,  tt in 1:t, ttt in 1:t)
                     cN1 = block_mat_mix_mul(Γ,cN1)
 
                     Ξ2  = block_mat_mix_mul(Ξ,cN1)
@@ -818,7 +818,7 @@ function self_energy_alpha2_cross!(structure, variables, times, h1, h2 , t, t′
 
         if length(n_listNEW_R) > 0
 
-            cMN = collect(==(tt,ttt)*c_mnFULL(structure,variables,n′,n′′,tt) for n′ in n_listNEW_R, n′′ in n_listNEW_R,  tt in 1:t, ttt in 1:t)
+            cMN = collect((tt == ttt ? c_mnFULL(structure,variables,n′,n′′,tt) : 0.0) for n′ in n_listNEW_R, n′′ in n_listNEW_R,  tt in 1:t, ttt in 1:t)
 
             Γ   = collect(==(sum(n′),sum(n′′)).*response_combinations(n′,n′′,variables.R[:,:,tt,ttt]) for n′ in n_listNEW_R, n′′ in n_listNEW_R, tt in 1:t, ttt in 1:t)
             
@@ -826,7 +826,7 @@ function self_energy_alpha2_cross!(structure, variables, times, h1, h2 , t, t′
 
             Ξ = block_identity(length(n_listNEW_R),t)
 
-            cN0 = collect(==(tt,ttt)*c_mnFULL(structure,variables,n′,temp0,ttt) for n′ in n_listNEW_R, tt in 1:t, ttt in 1:t)  
+            cN0 = collect((tt == ttt ? c_mnFULL(structure,variables,n′,temp0,ttt) : 0.0) for n′ in n_listNEW_R, tt in 1:t, ttt in 1:t)  
             cN0 = block_mat_mix_mul(Γ,cN0)
 
             Ξ_μ = block_mat_mix_mul(Ξ,cN0)
@@ -847,7 +847,7 @@ function self_energy_alpha2_cross!(structure, variables, times, h1, h2 , t, t′
                     temp2       = zeros(Int,structure.num_species)
                     temp2[j]    = 1
                                                         
-                    cN1 = collect(==(tt,ttt)*c_mnFULL(structure,variables,n′,temp2,ttt) for n′ in n_listNEW_R,  tt in 1:t, ttt in 1:t)
+                    cN1 = collect((tt == ttt ? c_mnFULL(structure,variables,n′,temp2,ttt) : 0.0) for n′ in n_listNEW_R,  tt in 1:t, ttt in 1:t)
                     cN1 = block_mat_mix_mul(Γ,cN1)
 
                     Ξ2  = block_mat_mix_mul(Ξ,cN1)

@@ -17,7 +17,7 @@ Achedmy implements several approximation schemes for computing two-time response
 
 - 🚀 **Fast**: Much faster than Gillespie for accurate one and two-time quantities in the regime of small copy numbers or large intrinsic noise
 - 📊 **Accurate**: Captures memory effects and fluctuations beyond mean-field
-- 🔧 **Flexible**: Works with any Catalyst.jl reaction network with polynomial propernsities and at most binary reactions
+- 🔧 **Flexible**: Works with any Catalyst.jl reaction network with polynomial propensities and at most binary reactions
 - 📈 **Adaptive**: Automatic time-grid refinement via KadanoffBaym.jl
 - 🧮 **Complete**: Computes responses, correlations, and equal-time variances
 

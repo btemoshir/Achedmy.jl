@@ -107,25 +107,23 @@ end
 structure = ReactionStructure(enzyme)
 variables = ReactionVariables(structure, "cross")
 
-# Solve with high accuracy
+# Solve (loose tolerances first; tighten them if needed, see Performance Tips)
 sol = solve_dynamics!(
     structure, 
     variables,
     selfEnergy = "gSBR",
     tmax = 5.0,
     tstart = 0.0,
-    atol = 1e-4,
-    rtol = 1e-3
+    atol = 1e-3,
+    rtol = 1e-2
 )
 
-# Check convergence
-@assert sol.retcode == :Success "Solver did not converge!"
-
-# Extract results
+# Extract results (sol is a named tuple: sol.t is the adaptive time grid)
+using LinearAlgebra  # for diag
 time = sol.t
 mean_product = variables.μ[4, :]  # P(t)
 variance_product = diag(variables.N[4,4,:,:])  # Var[P(t)]
-response_SE = variables.R[1,2,:,:]  # How E responds to perturbation in S
+response_SE = variables.R[1,2,:,:]  # How S responds to a perturbation of E
 
 # Visualize
 using PyPlot
@@ -249,9 +247,11 @@ function solve_dynamics!(structure,variables; selfEnergy="gSBR", tmax=1., tstart
         t = length(sol.w)
         for j in 1:structure.num_species
             variables.C[j,:,:] .= 0.
-            R1 = collect(ttt <= tt ? variables.R[j,tt,ttt] : 0 for tt in 1:t, ttt in 1:t)
+            # 0.0, not 0: a Float64/Int ternary makes collect return a Matrix{Real},
+            # which sends the product below to a slow, allocating generic matmul
+            R1 = collect(ttt <= tt ? variables.R[j,tt,ttt] : 0.0 for tt in 1:t, ttt in 1:t)
             ΣB = collect(variables.Σ_B[j,tt,ttt].*sol.w[tt][tt] for tt in 1:t, ttt in 1:t)
-            R2 = collect(ttt <= tt ? variables.R[j,tt,ttt].*sol.w[tt][ttt] : 0 for tt in 1:t, ttt in 1:t)
+            R2 = collect(ttt <= tt ? variables.R[j,tt,ttt].*sol.w[tt][ttt] : 0.0 for tt in 1:t, ttt in 1:t)
             variables.C[j,1:t,1:t] += R1*(ΣB*transpose(R2))                   
             
             #Old update -- IGNORE ---
@@ -315,11 +315,11 @@ function solve_dynamics!(structure,variables; selfEnergy="gSBR", tmax=1., tstart
                 for j_sum1 in 1:structure.num_species
                     for j_sum2 in 1:structure.num_species
 
-                        R1 = collect(ttt <= tt ? variables.R[j,j_sum1,tt,ttt] : 0 for tt in 1:t, ttt in 1:t)                            
+                        R1 = collect(ttt <= tt ? variables.R[j,j_sum1,tt,ttt] : 0.0 for tt in 1:t, ttt in 1:t)                            
 
                         ΣB = collect(variables.Σ_B[j_sum1,j_sum2,tt,ttt].*sol.w[tt][tt] for tt in 1:t, ttt in 1:t)
 
-                        R2 = collect(ttt <= tt ? variables.R[j2,j_sum2,tt,ttt].*sol.w[tt][ttt] : 0 for tt in 1:t, ttt in 1:t)
+                        R2 = collect(ttt <= tt ? variables.R[j2,j_sum2,tt,ttt].*sol.w[tt][ttt] : 0.0 for tt in 1:t, ttt in 1:t)
 
                         variables.C[j,j2,1:t,1:t] += R1 * (ΣB * transpose(R2))
 
@@ -370,9 +370,12 @@ function integrate2(hs::Vector, t1, t2, Σ::GreenFunction, R::GreenFunction, μ:
 
     retval = zero(R[t1,t2])
 
-    #for k in t2+1:t1
-    for k in t2:t1
-        retval += Σ[t1,k].*R[k,t2].*hs[k]
+    # Index element-wise like integrate2_cross: Σ[t1,k] and R[k,t2] each copy a
+    # slice, and this sum runs O(T^3) times per solve
+    for j in eachindex(retval)
+        for k in t2:t1
+            retval[j] += Σ[j,t1,k]*R[j,k,t2]*hs[k]
+        end
     end
 
     return retval

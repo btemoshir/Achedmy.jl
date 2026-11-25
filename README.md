@@ -36,7 +36,7 @@ TODO: Implement proper handling of initial correlation $C_{ij}(0,0)$ values! -->
 [![codecov](https://codecov.io/gh/btemoshir/achedmy/branch/main/graph/badge.svg)](https://codecov.io/gh/btemoshir/achedmy) -->
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) 
-[![Julia](https://img.shields.io/badge/Julia-1.9+-9558B2.svg)](https://julialang.org/) 
+[![Julia](https://img.shields.io/badge/Julia-1.12+-9558B2.svg)](https://julialang.org/) 
 [![Docs](https://img.shields.io/badge/docs-stable-blue.svg)](https://btemoshir.github.io/Achedmy.jl/stable/) 
 [![CI](https://github.com/btemoshir/Achedmy.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/btemoshir/Achedmy.jl/actions/workflows/CI.yml) 
 [![arXiv](https://img.shields.io/badge/arXiv-2611.25491-b31b1b.svg)](https://arxiv.org/abs/2611.25491) 
@@ -202,7 +202,7 @@ In gSBR, the response kernel is $\hat R^{\mathrm{eff}}=-\hat R^1-\frac{1}{2}\hat
 
 ### Prerequisites
 
-- Julia 1.9 or later
+- Julia 1.12 or later
 - Git (for cloning the repository)
 
 ### Install from Source
@@ -224,7 +224,7 @@ Pkg.instantiate()
 
 ```julia
 using Pkg
-Pkg.develop(path="/path/to/achedmy")
+Pkg.develop(path="/path/to/Achedmy.jl")
 ```
 
 ###  Use Julia's package manager from terminal
@@ -381,7 +381,7 @@ Achedmy implements four approximation schemes of increasing accuracy:
 - **Accuracy:** Best available, validated against master equation
 - **Cost:** Highest
 
-**Recommendation:** Start with gSBR unless computational cost is prohibitive, especially for systems with strong couplings or small molecule numbers.
+**Recommendation:** If accuracy is the main concern from the outset, start with gSBR unless computational cost is prohibitive, especially for systems with strong couplings or small molecule numbers. Otherwise, start with MAK and move to SBR, then gSBR with single-species and then cross-species responses, as needed (see [Numerical Instabilities](#numerical-instabilities)).
 
 ---
 
@@ -405,14 +405,27 @@ The `examples/` directory contains detailed Jupyter notebooks for three systems:
 - Epidemic spreading in finite populations
 - Time-dependent infection and recovery
 - Critical role of fluctuations near transitions
-- Population-size effects drastically alter dynamics; mean field predicts infection spreads to entire population, while gSBR correctly predicts extinction in finite populations.
+- Population-size effects drastically alter dynamics: mass-action kinetics predicts that the infection reaches the entire population, while gSBR, like the exact master equation, predicts that on average about half of the susceptibles are never infected.
 
 ### Running Examples
 
+The notebooks have their own environment, `examples/Project.toml`, which uses
+this checkout of Achedmy. Install it once, then start Jupyter in `examples/`:
+
 ```bash
+julia --project=examples -e 'using Pkg; Pkg.instantiate()'
 cd examples/
 jupyter notebook enzyme_kinetics.ipynb
 ```
+
+The Julia kernel must run Julia 1.12 or later. A kernel installed with IJulia's
+default `--project=@.` uses `examples/Project.toml` automatically:
+
+```bash
+julia +1.12 -e 'using Pkg; Pkg.add("IJulia"); using IJulia; installkernel("Julia")'
+```
+
+The notebooks load pre-computed results from `data/`, which is not in the repository.
 
 **Note:** Examples require additional Python libraries for comparison with other methods:
 - `cheMASTER` (Master equation solver)
@@ -425,22 +438,26 @@ jupyter notebook enzyme_kinetics.ipynb
 
 
 ```
-achedmy/
+Achedmy.jl/
 ├── src/
-│   └── Achedmy/
-│       ├── Achedmy.jl          # Main module
-│       ├── Cmn.jl              # Coefficient calculations (c_mn)
-│       ├── SelfEnergy.jl       # Self-energy Σ computations
-│       ├── Struct.jl           # ReactionStructure type definitions
-│       ├── BlockOp.jl          # Block operator definitions
-│       ├── Dynamics.jl         # Runs the dynamics and integrates the self-energies
-│       └── Var.jl              # ReactionVariables type definitions
+│   ├── Achedmy.jl              # Main module
+│   ├── Cmn.jl                  # Coefficient calculations (c_mn)
+│   ├── SelfEnergy.jl           # Self-energy Σ computations
+│   ├── Struct.jl               # ReactionStructure type definitions
+│   ├── BlockOp.jl              # Block operator definitions
+│   ├── Dynamics.jl             # Runs the dynamics and integrates the self-energies
+│   └── Var.jl                  # ReactionVariables type definitions
 ├── test/
-│   ├── runtests.jl            # Main test suite entry point
-│   ├── test_structure.jl      # Tests for ReactionStructure
-│   ├── test_variables.jl      # Tests for ReactionVariables
-│   └── test_dynamics.jl       # Tests for solve_dynamics!
+│   ├── runtests.jl             # Main test suite entry point
+│   ├── test_structure.jl       # Tests for ReactionStructure
+│   ├── test_variables.jl       # Tests for ReactionVariables
+│   └── test_dynamics.jl        # Tests for solve_dynamics!
+├── docs/
+│   ├── Project.toml            # Documentation environment
+│   ├── make.jl                 # Documenter build script
+│   └── src/                    # Documentation pages
 ├── examples/
+│   ├── Project.toml            # Environment for the notebooks
 │   ├── enzyme_kinetics.ipynb
 │   ├── gene_regulation.ipynb
 │   └── SIR_infection_dynamics.ipynb
@@ -450,12 +467,11 @@ achedmy/
 │       └── emre/               # EMRE/LNA solver (Python)
 ├── .github/
 │   └── workflows/
-│       ├── CI.yml              # Continuous Integration workflow
-│       ├── CompatHelper.yml    # Dependency compatibility checker
+│       ├── CI.yml              # Tests and documentation
 │       └── TagBot.yml          # Automatic version tagging
-├── plots/                      # Generated figures
+├── plots/                      # Figures generated by the notebooks
 ├── LICENSE                     # MIT License
-├── Project.toml                # Project dependencies
+├── Project.toml                # Package dependencies
 └── README.md                   # This file
 ```
 
@@ -475,31 +491,49 @@ achedmy/
 
 ### Julia Packages
 
+Achedmy itself uses these, and they are installed with it:
+
 ```julia
 Catalyst          # Reaction network DSL
 KadanoffBaym      # Adaptive time-stepping for memory equations
 LinearAlgebra     # Matrix operations
-DifferentialEquations  # ODE solvers
-Serialization     # Save/load results
+Einsum            # Tensor contractions in the block operations
 ```
 
-### Optional (for examples)
+### Optional (for examples, in `examples/Project.toml`)
 
 ```julia
-PyPlot           # Plotting
-PyCall           # Python interop
-LaTeXStrings     # LaTeX labels
-MomentClosure    # Normal closure comparison
+PyPlot                 # Plotting
+PyCall, Conda          # Python interop (master equation and EMRE comparisons)
+LaTeXStrings           # LaTeX labels
+Serialization          # Load the saved results in data/
+DifferentialEquations  # Michaelis-Menten QSS comparison (enzyme notebook)
+CSV, DataFrames        # Saved moment-closure results (enzyme notebook)
+GraphMakie             # Network diagrams (plot_network)
+CairoMakie             # Makie backend for plot_network
+MomentClosure          # Normal closure comparison (not included: separate environment, see below)
 ```
+
+The master-equation and EMRE comparisons call the Python code in
+`extras/other_dynamics` through PyCall; its Python needs numpy, scipy and tqdm.
+
+MomentClosure can't be installed in the same environment as Achedmy: its
+dependencies need RecursiveArrayTools 4, while KadanoffBaym needs version 3.
+Run the normal-closure comparison cells in the notebooks in a separate
+environment with Catalyst, MomentClosure and OrdinaryDiffEq.
 
 ### Installation
 
 ```julia
 using Pkg
-Pkg.add(["Catalyst", "LinearAlgebra", "DifferentialEquations", 
-         "Serialization", "PyPlot", "LaTeXStrings"])
-Pkg.add(url="https://github.com/NonequilibriumDynamics/KadanoffBaym.jl")
+# Achedmy, which pulls in KadanoffBaym and its other dependencies
+Pkg.add(url="https://github.com/btemoshir/Achedmy.jl")
+# Catalyst, to define reaction networks
+Pkg.add("Catalyst")
 ```
+
+The optional packages for the notebooks are in `examples/Project.toml`; see
+[Running Examples](#running-examples).
 
 ---
 
@@ -524,13 +558,12 @@ end
 ### Parameter Sweeps
 
 ```julia
+@unpack k_f = enzyme_system
 alpha_range = [0.01, 0.1, 1.0, 10.0]
 SOL, VAR = [], []
 
 for α in alpha_range
-    enzyme_system.defaults[k_f] = α
-    
-    structure = Achedmy.ReactionStructure(enzyme_system)
+    structure = Achedmy.ReactionStructure(enzyme_system; external_initialization=Dict(k_f => α))
     variables = Achedmy.ReactionVariables(structure, "cross")
     sol = Achedmy.solve_dynamics!(structure, variables, selfEnergy="gSBR")
     
@@ -568,6 +601,7 @@ To run specific test files:
 ```julia
 using Pkg
 Pkg.activate(".")
+using Test, Achedmy, Catalyst, LinearAlgebra  # runtests.jl normally loads these
 include("test/test_structure.jl")
 ```
 
@@ -575,18 +609,16 @@ include("test/test_structure.jl")
 
 The test suite covers:
 - ✅ Module loading and exports
-- ✅ Reaction network structure creation
+- ✅ Reaction network structure creation (birth-death, gene regulation, enzyme kinetics)
 - ✅ Variable initialization (cross and single response)
-- ✅ Dynamics integration for all methods (MAK, MCA, SBR, gSBR)
-- ✅ Physical constraints (positivity, causality)
-- ✅ Self-energy calculations
-- ✅ Example systems (enzyme kinetics, gene regulation, SIR)
+- ✅ Dynamics for all methods (MAK, MCA, SBR, gSBR), including their self-energies
+- ✅ Physical constraints (non-negative means and variances)
+- ✅ Effect of the solver tolerances
 
 ### Continuous Integration
 
 The package uses GitHub Actions for automated testing:
-- **CI.yml**: Tests on Julia 1.9, and latest across macOS and Windows
-- **CompatHelper.yml**: Automatically updates dependency compatibility
+- **CI.yml**: Tests on Julia 1.12 and the latest release on Ubuntu, macOS and Windows, and builds the documentation
 - **TagBot.yml**: Automatic version tagging
 
 View build status: [![CI](https://github.com/btemoshir/Achedmy.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/btemoshir/Achedmy.jl/actions/workflows/CI.yml)
@@ -624,7 +656,7 @@ If you see negative variances or diverging solutions:
 - Check initial conditions are physical (non-negative)
 - Try MAK first and then move to SBR, gSBR with single species response and cross species response in order. 
 - In case of instabilities, the cross species response gSBR can be more stable than single species response gSBR or any SBR.
-- Decrease `dt_max` to force smaller time steps. 
+- Decrease `dtmax` to force smaller time steps. 
 
 ---
 

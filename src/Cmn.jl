@@ -66,8 +66,8 @@ function mnList(structure)
     
     for i in 1:num_int
         
-        x = vec(collect(product([0:Int(max(s_i[j,i], r_i[j,i])) for j in 1:num_species]...)))
-        y = vec(collect(product([0:Int(r_i[j,i]) for j in 1:num_species]...)))
+        x = vec(collect(Iterators.product([0:Int(max(s_i[j,i], r_i[j,i])) for j in 1:num_species]...)))
+        y = vec(collect(Iterators.product([0:Int(r_i[j,i]) for j in 1:num_species]...)))
         
         #The above creates tuples(Int, Int ... , Int (len = num_species)) which needs to be converted to an array,
         # Otherwise it runs into issues later!
@@ -93,8 +93,8 @@ function mnList(structure)
     end
     
     
-    a = vec(collect(product([0:max1[j] for j in 1:num_species]...)))
-    b = vec(collect(product([0:max2[j] for j in 1:num_species]...)))
+    a = vec(collect(Iterators.product([0:max1[j] for j in 1:num_species]...)))
+    b = vec(collect(Iterators.product([0:max2[j] for j in 1:num_species]...)))
 
     push!(m_listFULL, a)
     push!(n_listFULL, b)
@@ -287,11 +287,13 @@ where each \$c_{mn}^β(t)\$ includes both combinatorial factors and mean-field d
 This function appears repeatedly in all self-energy calculations:
 
 ```julia
-# In self_energy_mak_noC!
-Σ_R[i,t] += c_mnFULL(structure, variables, [1,0,...], [1,0,...], t)
+# In self_energy_mak_noC!: unit multi-index e_i for species i
+e_i = zeros(Int, structure.num_species); e_i[i] = 1
+Σ_R[i,t,t] = c_mnFULL(structure, variables, e_i, e_i, t)
 
-# In self_energy_SBR!  
-Σ_R[i,t] += sum(c_mnFULL(..., m, n, t) * R^m * R^n for m,n in lists)
+# In self_energy_SBR! and the other memory self-energies, the same coefficients
+# multiply products of response functions, summed over the (m, n) index pairs
+# from mnList(structure)
 ```
 
 # Performance

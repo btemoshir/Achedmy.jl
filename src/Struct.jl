@@ -119,24 +119,31 @@ function ReactionStructure(reaction_system::ReactionSystem;external_initializati
         # In the function Reaction Variables, we check if the dimensions of the initial_C (if initial_C was zero) are correct and resize if necessary
     end
 
-    if external_initialization
-        merge!(reaction_system.defaults,external_initialization)
+    # ModelingToolkit removed `sys.defaults`; the default values now live in
+    # `initial_conditions` and are stored as symbolic constants, so each lookup
+    # below is unwrapped to a number with Symbolics.value. Copy, so overrides
+    # from external_initialization don't change the system's own defaults
+    defaults = copy(Catalyst.ModelingToolkitBase.get_initial_conditions(reaction_system))
+
+    # `!== false`: external_initialization is false or a Dict, and a Dict can't be used as a Bool
+    if external_initialization !== false
+        merge!(defaults,external_initialization)
     end
 
     for i in reactions(reaction_system)
         if length(dependents(i,reaction_system)) == 1 && length(i.products) == 0 
             #The destruction reaction
             sp     = speciesmap(reaction_system)[i.substrates[1]]
-            k2[sp] = reaction_system.defaults[i.rate]
+            k2[sp] = Catalyst.Symbolics.value(defaults[i.rate])
 
         elseif length(dependents(i,reaction_system)) == 0 
             #The spontaneous creation reaction
             sp     = speciesmap(reaction_system)[i.products[1]]
-            k1[sp] = reaction_system.defaults[i.rate]
+            k1[sp] = Catalyst.Symbolics.value(defaults[i.rate])
 
         else 
             #The interaction reactions rates
-            append!(k3,reaction_system.defaults[i.rate])
+            append!(k3,Catalyst.Symbolics.value(defaults[i.rate]))
 
             #For stochiometry
             s_i = cat(s_i,prodstoichmat(reaction_system)[:,temp_index],dims=2)
@@ -149,7 +156,7 @@ function ReactionStructure(reaction_system::ReactionSystem;external_initializati
     #Store the initial values
     for i in species(reaction_system)
         sp = speciesmap(reaction_system)[i]
-        initial_values[sp] = reaction_system.defaults[i]
+        initial_values[sp] = Catalyst.Symbolics.value(defaults[i])
 
     end
     
@@ -158,8 +165,8 @@ function ReactionStructure(reaction_system::ReactionSystem;external_initializati
     
     for i in 1:num_int
 
-        x = vec(collect(product([0:Int(max(r_i[j,i],s_i[j,i])) for j in 1:num_species]...)))
-        y = vec(collect(product([0:Int(r_i[j,i]) for j in 1:num_species]...)))
+        x = vec(collect(Iterators.product([0:Int(max(r_i[j,i],s_i[j,i])) for j in 1:num_species]...)))
+        y = vec(collect(Iterators.product([0:Int(r_i[j,i]) for j in 1:num_species]...)))
         
         #The above creates tuples(Int, Int ... , Int (len = num_species)) which needs to be converted to an array,
         # Otherwise it runs into issues later!

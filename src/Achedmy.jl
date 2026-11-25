@@ -66,10 +66,6 @@ module Achedmy
 
 using Catalyst
 using LinearAlgebra
-using BlockArrays
-using ChainRulesCore
-using Distributions
-using IterTools
 using Einsum
 using KadanoffBaym
 
