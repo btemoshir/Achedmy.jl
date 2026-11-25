@@ -1,7 +1,7 @@
 name = "Achedmy"
 uuid = "3809e951-761c-4e21-b9ed-bc66e666ef58"
 authors = ["Moshir Harsh <btemoshir@gmail.com>"]
-version = "0.2.0"
+version = "1.0.0"
 
 [deps]
 Catalyst = "479239e8-5488-4da2-87a7-35f2df7eef83"

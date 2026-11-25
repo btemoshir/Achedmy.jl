@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - dev
+    tags: ['*']  # release tags (pushed by TagBot) build and deploy the "stable" docs
   pull_request:
     branches:
       - main

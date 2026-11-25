@@ -56,6 +56,12 @@ responses = variables.R     # R[i, j, t, t′]: two-time responses
 
 ```julia
 using Pkg
+Pkg.add("Achedmy")
+```
+
+For the latest development version, install from GitHub instead:
+
+```julia
 Pkg.add(url="https://github.com/btemoshir/Achedmy.jl")
 ```
 
