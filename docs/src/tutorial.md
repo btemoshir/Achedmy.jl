@@ -8,10 +8,14 @@ Make sure you have installed:
 
 ```julia
 using Pkg
-Pkg.add(url="https://github.com/btemoshir/Achedmy.jl")
+Pkg.add("Achedmy")
 Pkg.add("Catalyst")
 Pkg.add("Plots")  # For visualization
 ```
+
+For the latest development version, use
+`Pkg.add(url="https://github.com/btemoshir/Achedmy.jl")` instead of
+`Pkg.add("Achedmy")`.
 
 ## Step 1: Define Your Reaction Network
 

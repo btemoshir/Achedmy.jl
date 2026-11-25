@@ -527,9 +527,15 @@ environment with Catalyst, MomentClosure and OrdinaryDiffEq.
 ```julia
 using Pkg
 # Achedmy, which pulls in KadanoffBaym and its other dependencies
-Pkg.add(url="https://github.com/btemoshir/Achedmy.jl")
+Pkg.add("Achedmy")
 # Catalyst, to define reaction networks
 Pkg.add("Catalyst")
+```
+
+For the latest development version, install from GitHub instead:
+
+```julia
+Pkg.add(url="https://github.com/btemoshir/Achedmy.jl")
 ```
 
 The optional packages for the notebooks are in `examples/Project.toml`; see
